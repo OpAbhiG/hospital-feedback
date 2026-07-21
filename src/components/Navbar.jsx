@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 export default function Navbar({ isAdminActive, currentPage, goToPage, openLoginModal, confirmLogout }) {
   const clickTimeoutRef = useRef(null);
 
-  // Safely manage single vs double click on logo using useRef
+  // Separate single click from double click on hospital logo
   const handleLogoClick = (e) => {
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
@@ -23,28 +23,26 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
   };
 
   return (
-    <nav className="navbar navbar-expand-xl fixed-top shadow-sm py-2">
+    <nav className="navbar navbar-expand-xl fixed-top shadow-sm py-2 bg-white">
       <div className="container-xl">
-        {/* Brand Logo */}
+        {/* Hospital Brand Logo (Double-click opens Admin Access) */}
         <div 
-          className="navbar-brand d-flex align-items-center gap-2" 
+          className="navbar-brand" 
           style={{ cursor: 'pointer' }} 
           onClick={handleLogoClick}
-          title="Click to go Home | Double-click for Admin Access"
+          title="Click to go Home | Double-click logo for Admin Access"
           tabIndex={0}
           role="button"
           onKeyDown={(e) => e.key === 'Enter' && (isAdminActive ? confirmLogout() : goToPage('landing'))}
         >
-          <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{ width: '42px', height: '42px', fontSize: '1.2rem' }}>
-            HV
-          </div>
-          <div>
-            <div className="fw-bold text-main lh-1" style={{ fontSize: '1.05rem' }}>H.V. Desai Eye Hospital</div>
-            <div className="text-muted small fw-medium" style={{ fontSize: '0.75rem' }}>Patient Feedback Portal</div>
-          </div>
+          <img 
+            src="https://www.hvdeh.org/_next/image?url=%2Flogo.jpg&w=1080&q=75" 
+            alt="H.V. Desai Eye Hospital" 
+            style={{ height: '60px', width: 'auto' }} 
+          />
         </div>
 
-        {/* Mobile Toggle Button */}
+        {/* Mobile Navbar Toggler */}
         <button 
           className="navbar-toggler border-0 shadow-none p-2" 
           type="button" 
@@ -57,7 +55,7 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Nav Links & Actions */}
+        {/* Navigation Content */}
         <div className="collapse navbar-collapse" id="navbarNav">
           {!isAdminActive ? (
             <>
@@ -80,9 +78,9 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
                 </span>
               </div>
 
-              <div className="d-flex flex-column flex-xl-row align-items-xl-center gap-3 mt-3 mt-xl-0 pt-3 pt-xl-0 border-top border-xl-0">
-                {/* Hospital Contact Info */}
-                <div className="d-flex flex-column flex-sm-row gap-3 gap-xl-4" style={{ fontSize: '0.9rem' }}>
+              <div className="d-flex flex-column flex-xl-row align-items-xl-center gap-4 mt-3 mt-xl-0 pt-3 pt-xl-0 border-top border-xl-0">
+                {/* Contact Information */}
+                <div className="d-flex flex-column flex-sm-row gap-3 gap-xl-4" style={{ fontSize: '0.95rem' }}>
                   <a href="tel:+919175239393" className="text-decoration-none nav-contact-link">
                     <span className="nav-contact-icon"><i className="bi bi-telephone-fill"></i></span> +91 9175239393
                   </a>
@@ -91,8 +89,8 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
                   </a>
                 </div>
 
-                {/* Social Links */}
-                <div className="d-flex gap-2">
+                {/* Social Media Links */}
+                <div className="d-flex gap-2 pb-2 pb-xl-0">
                   <a href="https://www.facebook.com/hvdeh.org/" target="_blank" rel="noreferrer" className="nav-social-btn" aria-label="Facebook">
                     <i className="bi bi-facebook"></i>
                   </a>
@@ -105,22 +103,16 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
                   <a href="https://www.linkedin.com/company/pbma's-h-v-desai-eye-hospital---india/" target="_blank" rel="noreferrer" className="nav-social-btn" aria-label="LinkedIn">
                     <i className="bi bi-linkedin"></i>
                   </a>
+                  <a href="https://www.youtube.com/@pbmashvdesaieyehospital8734" target="_blank" rel="noreferrer" className="nav-social-btn" aria-label="YouTube">
+                    <i className="bi bi-youtube"></i>
+                  </a>
                 </div>
-
-                {/* Explicit Admin Access Trigger */}
-                <button 
-                  onClick={openLoginModal} 
-                  className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-medium ms-xl-2"
-                  title="Admin Dashboard Login"
-                >
-                  <i className="bi bi-shield-lock me-1"></i> Admin Login
-                </button>
               </div>
             </>
           ) : (
             <div className="navbar-nav ms-auto gap-2 align-items-xl-center mt-3 mt-xl-0">
               <span className="nav-link text-primary fw-bold px-3 py-2 bg-primary-subtle rounded-pill">
-                <i className="bi bi-person-circle me-2"></i> Admin Mode
+                <i className="bi bi-person-circle me-2"></i> Admin Active
               </span>
               <button 
                 onClick={confirmLogout} 
