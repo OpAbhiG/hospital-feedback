@@ -1,23 +1,35 @@
+/* ==========================================================================
+   H.V. DESAI EYE HOSPITAL - BRAND COLOR PALETTE & DESIGN SYSTEM
+   ========================================================================== */
 :root {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  --accent: #06b6d4;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  /* Hospital Brand Identity Colors (Deep Navy, Medical Azure, Crisp White) */
+  --primary: #0f4c81;          /* H.V. Desai Deep Navy Blue */
+  --primary-hover: #09345a;    /* Darker Navy for hover */
+  --primary-light: #f0f7ff;    /* Soft Azure Tint */
+  --accent: #0284c7;           /* Eye Care Medical Azure */
+  --accent-light: #e0f2fe;     /* Light Azure Background */
+  --brand-gold: #d97706;       /* Hospital Crest Gold Accent */
+  
+  /* Status Colors */
+  --success: #059669;          /* High contrast Emerald Green */
+  --warning: #d97706;          /* High contrast Amber */
+  --danger: #dc2626;           /* High contrast Crimson */
+  
+  /* Neutral Palette optimized for Visual Readability */
   --bg-light: #f8fafc;
   --card-bg: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --text-main: #0f172a;        /* Deep Slate for high contrast reading */
+  --text-muted: #475569;       /* Slate muted text */
+  --border-color: #cbd5e1;     /* High contrast borders */
+  
+  /* Radii & Shadows */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-pill: 9999px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 12px 28px rgba(37, 99, 235, 0.12);
+  --shadow-sm: 0 1px 3px rgba(15, 76, 129, 0.06);
+  --shadow-md: 0 4px 14px rgba(15, 76, 129, 0.1);
+  --shadow-lg: 0 12px 32px rgba(15, 76, 129, 0.15);
 }
 
 body {
@@ -27,14 +39,15 @@ body {
   overflow-x: hidden;
   padding-top: 80px;
   line-height: 1.6;
+  font-size: 1rem;
 }
 
-/* Page Animations */
+/* Smooth Entrance Animation */
 .page { 
-  animation: fadeIn 0.35s ease-out forwards; 
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
 }
 @keyframes fadeIn { 
-  from { opacity: 0; transform: translateY(10px); } 
+  from { opacity: 0; transform: translateY(12px); } 
   to { opacity: 1; transform: translateY(0); } 
 }
 
@@ -47,7 +60,7 @@ body {
 }
 .nav-link { 
   color: var(--text-muted) !important; 
-  font-weight: 500; 
+  font-weight: 600; 
   padding: 0.5rem 1rem; 
   border-radius: var(--radius-sm); 
   transition: all 0.2s ease; 
@@ -58,17 +71,16 @@ body {
   cursor: pointer; 
 }
 
-/* Hero Section */
+/* Hero Section with Official Navy Blue Gradient */
 .hero {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(6, 182, 212, 0.9)), 
+  background: linear-gradient(135deg, rgba(15, 76, 129, 0.95), rgba(2, 132, 199, 0.9)), 
   url('https://images.unsplash.com/photo-1682100615199-5a90830ccbb3?q=80&w=1228&auto=format&fit=crop') center/cover no-repeat;
-  color: white;
-  min-height: calc(85vh - 80px);
+  color: #ffffff;
+  min-height: calc(82vh - 80px);
   display: flex;
   align-items: center;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  position: relative;
 }
 
 /* Cards & Glassmorphism */
@@ -80,7 +92,7 @@ body {
 }
 
 .feedback-card { 
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); 
   cursor: pointer; 
   border: 2px solid transparent; 
 }
@@ -97,18 +109,29 @@ body {
   transform: scale(1.1); 
 }
 
-/* Form Elements */
+/* Form Controls with High Contrast Focus Rings */
 .form-control, .form-select { 
   border-radius: var(--radius-md); 
   border: 1px solid var(--border-color); 
-  padding: 0.75rem 1rem; 
-  font-size: 0.95rem;
+  padding: 0.8rem 1.1rem; 
+  font-size: 1rem;
+  color: var(--text-main);
   transition: all 0.2s ease; 
 }
 .form-control:focus, .form-select:focus { 
   border-color: var(--primary); 
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); 
+  box-shadow: 0 0 0 4px rgba(15, 76, 129, 0.15); 
   outline: none;
+}
+
+/* Primary Button Styling */
+.btn-primary { 
+  background-color: var(--primary); 
+  border-color: var(--primary); 
+}
+.btn-primary:hover, .btn-primary:focus { 
+  background-color: var(--primary-hover); 
+  border-color: var(--primary-hover); 
 }
 
 /* Modals */
@@ -121,7 +144,7 @@ body {
   border-bottom: 1px solid var(--border-color); 
 }
 .modal.show { 
-  background-color: rgba(15, 23, 42, 0.5); 
+  background-color: rgba(15, 23, 42, 0.6); 
 }
 
 /* Sentiment Category Buttons */
@@ -129,7 +152,8 @@ body {
   border-radius: var(--radius-md); 
   font-weight: 600; 
   border-width: 2px; 
-  min-height: 44px;
+  min-height: 48px;
+  font-size: 1rem;
 }
 .category-btn.active-positive { 
   background-color: var(--success); 
@@ -147,25 +171,25 @@ body {
   border-color: var(--danger); 
 }
 
-/* Emoji Interactive Elements */
+/* Emoji Rating Options for High Visibility */
 .emoji-option {
   cursor: pointer;
-  padding: 8px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
 }
 .emoji-option:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
 .emoji-option:hover {
-  transform: scale(1.15);
+  transform: scale(1.12);
 }
 
-/* Dashboard Analytics */
+/* Dashboard Analytics Stat Cards */
 .stat-card { 
-  border-left: 4px solid var(--primary); 
+  border-left: 5px solid var(--primary); 
   border-radius: var(--radius-md);
 }
 .stat-card.border-info { border-left-color: var(--accent); }
@@ -174,7 +198,7 @@ body {
 
 .chart-container { 
   position: relative; 
-  height: 280px; 
+  height: 290px; 
   width: 100%; 
 }
 
@@ -182,11 +206,11 @@ body {
   height: 6px; 
 }
 .table-responsive::-webkit-scrollbar-thumb { 
-  background: #cbd5e1; 
+  background: #94a3b8; 
   border-radius: var(--radius-pill); 
 }
 
-/* Custom Nav Contacts & Social Icons */
+/* Nav Contacts & Social Icons */
 .nav-contact-link { 
   font-weight: 600; 
   color: var(--text-main) !important; 
@@ -237,14 +261,14 @@ body {
 /* Mobile & Touch Responsiveness */
 @media (max-width: 767.98px) {
   body {
-    padding-top: 70px;
+    padding-top: 72px;
   }
   .hero {
     min-height: auto;
-    padding: 3rem 1rem;
+    padding: 3.5rem 1rem;
     border-radius: 0;
   }
   .chart-container {
-    height: 220px;
+    height: 230px;
   }
 }
