@@ -8,12 +8,14 @@ const EMOJI_SCALE = [
   { value: 5, text: 'Excellent', emoji: '🤩' }
 ];
 
+const INITIAL_FORM_DATA = { patientName: '', mobile: '', age: '', gender: '', feedbackText: '' };
+
 export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const [step, setStep] = useState('select-dept'); // 'select-dept' | 'form' | 'thank-you'
   const [currentType, setCurrentType] = useState('');
   const [currentCategory, setCurrentCategory] = useState('Positive');
   const [rating, setRating] = useState(5);
-  const [formData, setFormData] = useState({ patientName: '', mobile: '', age: '', gender: '', feedbackText: '' });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [questionAnswers, setQuestionAnswers] = useState({});
 
   const handleDeptSelect = (type) => {
@@ -25,10 +27,26 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
     setStep('form');
   };
 
+  const handleResetAndHome = () => {
+    setFormData(INITIAL_FORM_DATA);
+    setQuestionAnswers({});
+    setRating(5);
+    setCurrentCategory('Positive');
+    setStep('select-dept');
+    goHome();
+  };
+
+  const handleAnotherFeedback = () => {
+    setFormData(INITIAL_FORM_DATA);
+    setQuestionAnswers({});
+    setRating(5);
+    setCurrentCategory('Positive');
+    setStep('select-dept');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Modern non-deprecated random ID generator
     const uniqueId = 'FB-' + Math.random().toString(36).substring(2, 11).toUpperCase();
 
     const feedbackObj = {
@@ -53,10 +71,18 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   if (step === 'select-dept') {
     return (
       <div className="container py-5 page active">
-        <div className="text-center mb-5 mt-2">
+        {/* Step Progress */}
+        <div className="d-flex justify-content-center mb-4">
+          <span className="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
+            Step 1 of 2: Select Department
+          </span>
+        </div>
+
+        <div className="text-center mb-5 mt-1">
           <h2 className="fw-bold text-main">Select Department</h2>
           <p className="text-muted">Where did you receive your eye care services today?</p>
         </div>
+
         <div className="row justify-content-center g-4">
           {Object.entries(hospitalConfig).map(([deptName, data]) => (
             <div className="col-lg-5 col-md-6" key={deptName}>
@@ -65,6 +91,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                 onClick={() => handleDeptSelect(deptName)}
                 tabIndex={0}
                 role="button"
+                aria-label={`Select ${deptName} Department`}
                 onKeyDown={(e) => e.key === 'Enter' && handleDeptSelect(deptName)}
               >
                 <div className="mb-4">
@@ -83,20 +110,25 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   // Step 2: Feedback Form
   if (step === 'form') {
     return (
-      <div className="container py-4 page active mt-3">
-        <button 
-          className="btn btn-link text-muted text-decoration-none mb-3 px-0 fw-medium d-inline-flex align-items-center gap-1" 
-          onClick={() => setStep('select-dept')}
-        >
-          <i className="bi bi-arrow-left"></i> Back to Department Selection
-        </button>
+      <div className="container py-4 page active mt-2">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <button 
+            className="btn btn-link text-muted text-decoration-none px-0 fw-medium d-inline-flex align-items-center gap-1" 
+            onClick={() => setStep('select-dept')}
+          >
+            <i className="bi bi-arrow-left"></i> Change Department
+          </button>
+          <span className="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
+            Step 2 of 2: Details & Ratings
+          </span>
+        </div>
 
         <div className="row justify-content-center">
           <div className="col-lg-8">
             <div className="glass card border-0 overflow-hidden shadow-sm">
               <div className="card-header bg-primary text-white py-4 border-0">
                 <h4 className="mb-0 fw-bold d-flex align-items-center gap-2">
-                  <i className={`bi ${hospitalConfig[currentType]?.icon}`}></i> {currentType} Feedback Form
+                  <i className={`bi ${hospitalConfig[currentType]?.icon}`}></i> {currentType} Patient Feedback
                 </h4>
               </div>
 
@@ -160,8 +192,8 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                   </div>
 
                   {/* Overall Rating Emoji Scale */}
-                  <h5 className="fw-bold mt-5 mb-3 text-primary border-bottom pb-2">2. Overall Rating</h5>
-                  <p className="text-center text-muted small mb-3">Select the emoji that best describes your experience today.</p>
+                  <h5 className="fw-bold mt-5 mb-3 text-primary border-bottom pb-2">2. Overall Experience</h5>
+                  <p className="text-center text-muted small mb-3">Select the emoji that best describes your overall visit today.</p>
                   
                   <div className="d-flex justify-content-center gap-2 gap-md-4 mb-4 flex-wrap" role="radiogroup" aria-label="Overall Experience Rating">
                     {EMOJI_SCALE.map((item) => {
@@ -181,7 +213,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                             fontSize: '2.5rem', 
                             opacity: isSelected ? 1 : 0.35, 
                             transform: isSelected ? 'scale(1.2)' : 'scale(1)', 
-                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' 
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' 
                           }}>
                             {item.emoji}
                           </div>
@@ -193,8 +225,8 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                     })}
                   </div>
 
-                  {/* Sentiment Buttons */}
-                  <h5 className="fw-bold mt-4 mb-3 text-primary border-bottom pb-2">3. Overall Impression</h5>
+                  {/* Sentiment Category Buttons */}
+                  <h5 className="fw-bold mt-4 mb-3 text-primary border-bottom pb-2">3. General Sentiment</h5>
                   <div className="btn-group w-100 mb-4 gap-2 d-flex flex-wrap flex-md-nowrap" role="group">
                     <button 
                       type="button" 
@@ -221,7 +253,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
 
                   {/* Specific Service Ratings */}
                   <div className="mb-4 bg-light p-3 p-md-4 rounded-3 border">
-                    <h6 className="mb-3 fw-bold text-main border-bottom pb-2">4. Specific Services Rating</h6>
+                    <h6 className="mb-3 fw-bold text-main border-bottom pb-2">4. Specific Department Services</h6>
                     <div className="row g-3">
                       {hospitalConfig[currentType]?.questions.map((q, idx) => (
                         <div className="col-md-6" key={idx}>
@@ -245,7 +277,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                                     fontSize: '1.4rem', 
                                     opacity: isSelected ? 1 : 0.25, 
                                     transform: isSelected ? 'scale(1.25)' : 'scale(1)', 
-                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' 
+                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' 
                                   }}>
                                     {item.emoji}
                                   </div>
@@ -265,7 +297,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       id="feedbackComments"
                       className="form-control" 
                       rows="4" 
-                      placeholder="Share details about your hospital visit..." 
+                      placeholder="Tell us about your doctor consultation, nursing care, wait times, or cleanliness..." 
                       value={formData.feedbackText} 
                       onChange={(e) => setFormData({ ...formData, feedbackText: e.target.value })}
                     ></textarea>
@@ -292,10 +324,15 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
             <i className="bi bi-check-circle-fill text-success" style={{ fontSize: '4.5rem' }}></i>
           </div>
           <h2 className="text-main fw-bold">Thank You!</h2>
-          <p className="text-muted mt-3 mb-4">Your feedback has been received. It helps us serve you and future patients even better.</p>
-          <button onClick={goHome} className="btn btn-primary px-5 py-2.5 fw-bold rounded-pill shadow-sm">
-            Return to Home
-          </button>
+          <p className="text-muted mt-3 mb-4">Your feedback has been submitted successfully. Your input helps us continuously improve our patient care standards.</p>
+          <div className="d-flex flex-column flex-sm-row justify-content-center gap-2">
+            <button onClick={handleAnotherFeedback} className="btn btn-outline-primary px-4 py-2.5 fw-bold rounded-pill">
+              Submit Another Feedback
+            </button>
+            <button onClick={handleResetAndHome} className="btn btn-primary px-4 py-2.5 fw-bold rounded-pill shadow-sm">
+              Return to Home
+            </button>
+          </div>
         </div>
       </div>
     </div>

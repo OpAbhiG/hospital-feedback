@@ -4,12 +4,15 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
 
-export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfig }) {
+export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfig, deleteFeedback, seedDemoData }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortMode, setSortMode] = useState('newest');
+  const [filterDept, setFilterDept] = useState('ALL');
+  const [filterSentiment, setFilterSentiment] = useState('ALL');
 
   // Modals specific to Admin
-  const [modalState, setModalState] = useState(null); // 'addDept' | 'addQuestion' | 'confirm' | null
+  const [modalState, setModalState] = useState(null); // 'addDept' | 'addQuestion' | 'confirm' | 'viewDetail' | null
+  const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [newDept, setNewDept] = useState({ name: '', desc: '' });
   const [newQuestion, setNewQuestion] = useState({ dept: '', text: '' });
   const [confirmAction, setConfirmAction] = useState({ msg: '', onConfirm: null });
@@ -44,13 +47,13 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
         datasets: [{
           label: 'Feedback Entries',
           data: trendData,
-          borderColor: '#2563eb',
-          backgroundColor: 'rgba(37, 99, 235, 0.12)',
+          borderColor: '#0f4c81',
+          backgroundColor: 'rgba(15, 76, 129, 0.12)',
           tension: 0.4,
           borderWidth: 3,
           fill: true,
           pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#2563eb',
+          pointBorderColor: '#0f4c81',
           pointBorderWidth: 2,
           pointRadius: 4
         }]
@@ -59,7 +62,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
         labels: hasData ? ['Positive', 'Neutral', 'Negative'] : ['No Data'],
         datasets: [{
           data: hasData ? [posCount, neuCount, negCount] : [1],
-          backgroundColor: hasData ? ['#10b981', '#f59e0b', '#ef4444'] : ['#e2e8f0'],
+          backgroundColor: hasData ? ['#059669', '#d97706', '#dc2626'] : ['#cbd5e1'],
           borderWidth: 0,
           hoverOffset: hasData ? 4 : 0
         }]
@@ -76,6 +79,18 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   // Filter & Sort Table Submissions
   const filteredTableData = useMemo(() => {
     let result = [...feedbacks];
+
+    // Filter by Department
+    if (filterDept !== 'ALL') {
+      result = result.filter(f => f.feedbackType === filterDept);
+    }
+
+    // Filter by Sentiment
+    if (filterSentiment !== 'ALL') {
+      result = result.filter(f => f.category === filterSentiment);
+    }
+
+    // Filter by Search Query
     if (searchTerm.trim()) {
       const lower = searchTerm.toLowerCase().trim();
       result = result.filter(f => 
@@ -85,13 +100,14 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       );
     }
 
+    // Sort Modes
     if (sortMode === 'newest') result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     if (sortMode === 'oldest') result.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
     if (sortMode === 'highest') result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     if (sortMode === 'lowest') result.sort((a, b) => (a.rating || 0) - (b.rating || 0));
 
     return result;
-  }, [feedbacks, searchTerm, sortMode]);
+  }, [feedbacks, searchTerm, sortMode, filterDept, filterSentiment]);
 
   // Actions
   const saveDept = () => {
@@ -158,9 +174,16 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
           </h2>
           <p className="text-muted m-0">Real-time patient feedback performance overview</p>
         </div>
-        <button onClick={exportCSV} className="btn btn-success rounded-pill px-4 shadow-sm fw-medium align-self-start align-self-md-center">
-          <i className="bi bi-file-earmark-spreadsheet me-2"></i> Export CSV
-        </button>
+        <div className="d-flex gap-2">
+          {feedbacks.length === 0 && seedDemoData && (
+            <button onClick={seedDemoData} className="btn btn-outline-primary rounded-pill px-4 shadow-sm fw-medium">
+              <i className="bi bi-magic me-1"></i> Load Demo Data
+            </button>
+          )}
+          <button onClick={exportCSV} className="btn btn-success rounded-pill px-4 shadow-sm fw-medium">
+            <i className="bi bi-file-earmark-spreadsheet me-2"></i> Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Overview Stat Cards */}
@@ -281,17 +304,55 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
 
       {/* Submissions Data Table */}
       <div className="glass card p-4 mb-5">
-        <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-          <h5 className="mb-0 fw-bold text-main">Patient Submissions Data</h5>
-          <div className="d-flex gap-2 w-100" style={{ maxWidth: '480px' }}>
+        <div className="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4 gap-3">
+          <div>
+            <h5 className="mb-0 fw-bold text-main">Patient Submissions Data</h5>
+            <span className="text-muted small">Showing {filteredTableData.length} of {feedbacks.length} records</span>
+          </div>
+
+          {/* Multi-Filter Toolbar */}
+          <div className="d-flex flex-wrap gap-2 w-100" style={{ maxWidth: '650px' }}>
             <input 
               type="text" 
-              className="form-control" 
-              placeholder="Search by name, department, comment..." 
+              className="form-control flex-grow-1" 
+              placeholder="Search by name, comment..." 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
             />
-            <select className="form-select" style={{ minWidth: '150px' }} value={sortMode} onChange={(e) => setSortMode(e.target.value)}>
+
+            {/* Department Filter */}
+            <select 
+              className="form-select" 
+              style={{ width: '130px' }} 
+              value={filterDept} 
+              onChange={(e) => setFilterDept(e.target.value)}
+            >
+              <option value="ALL">All Depts</option>
+              {Object.keys(hospitalConfig).map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+
+            {/* Sentiment Filter */}
+            <select 
+              className="form-select" 
+              style={{ width: '130px' }} 
+              value={filterSentiment} 
+              onChange={(e) => setFilterSentiment(e.target.value)}
+            >
+              <option value="ALL">All Feelings</option>
+              <option value="Positive">Positive</option>
+              <option value="Neutral">Neutral</option>
+              <option value="Negative">Negative</option>
+            </select>
+
+            {/* Sort Mode */}
+            <select 
+              className="form-select" 
+              style={{ width: '130px' }} 
+              value={sortMode} 
+              onChange={(e) => setSortMode(e.target.value)}
+            >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
               <option value="highest">Highest Rating</option>
@@ -310,6 +371,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                 <th>Rating</th>
                 <th>Sentiment</th>
                 <th className="w-25">Comments</th>
+                <th className="text-end">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -334,14 +396,34 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                         {f.category}
                       </span>
                     </td>
-                    <td className="text-truncate" style={{ maxWidth: '250px' }} title={f.feedbackText}>
+                    <td className="text-truncate" style={{ maxWidth: '240px' }} title={f.feedbackText}>
                       {f.feedbackText || <em className="text-muted">No comments</em>}
+                    </td>
+                    <td className="text-end">
+                      <div className="d-flex justify-content-end gap-1">
+                        <button 
+                          className="btn btn-sm btn-outline-primary rounded-circle"
+                          title="View Full Submission"
+                          onClick={() => { setSelectedSubmission(f); setModalState('viewDetail'); }}
+                        >
+                          <i className="bi bi-eye"></i>
+                        </button>
+                        {deleteFeedback && (
+                          <button 
+                            className="btn btn-sm btn-outline-danger rounded-circle"
+                            title="Delete Submission"
+                            onClick={() => deleteConfigItem(`Permanently delete submission ${f.id}?`, () => deleteFeedback(f.id))}
+                          >
+                            <i className="bi bi-trash"></i>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="text-center py-4 text-muted">
+                  <td colSpan="7" className="text-center py-4 text-muted">
                     <i className="bi bi-inbox fs-2 d-block mb-2"></i> No matching feedback submissions found.
                   </td>
                 </tr>
@@ -354,6 +436,66 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       {/* Admin Dialog Modals */}
       {modalState && <div className="modal-backdrop fade show" onClick={() => setModalState(null)}></div>}
       
+      {/* View Detail Modal */}
+      {modalState === 'viewDetail' && selectedSubmission && (
+        <div className="modal fade show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content shadow-lg p-4">
+              <div className="modal-header border-0 pb-0">
+                <h5 className="fw-bold text-primary m-0">
+                  <i className="bi bi-file-earmark-text me-2"></i>Feedback Detail ({selectedSubmission.id})
+                </h5>
+                <button type="button" className="btn-close" onClick={() => setModalState(null)}></button>
+              </div>
+              <div className="modal-body py-4">
+                <div className="row g-3 mb-4 bg-light p-3 rounded-3">
+                  <div className="col-6 col-md-3"><span className="text-muted small d-block">Department</span><strong>{selectedSubmission.feedbackType}</strong></div>
+                  <div className="col-6 col-md-3"><span className="text-muted small d-block">Patient Name</span><strong>{selectedSubmission.patientName}</strong></div>
+                  <div className="col-6 col-md-3"><span className="text-muted small d-block">Mobile</span><strong>{selectedSubmission.mobile || 'Not provided'}</strong></div>
+                  <div className="col-6 col-md-3"><span className="text-muted small d-block">Age / Gender</span><strong>{selectedSubmission.age ? `${selectedSubmission.age} yrs` : 'N/A'} / {selectedSubmission.gender}</strong></div>
+                </div>
+
+                <div className="d-flex justify-content-between align-items-center mb-4 p-3 bg-primary-subtle rounded-3 text-primary">
+                  <div>
+                    <span className="small d-block fw-bold text-uppercase opacity-75">Overall Experience Rating</span>
+                    <h4 className="fw-bold m-0 text-warning">
+                      {'★'.repeat(selectedSubmission.rating)} <span className="fs-5 text-dark ms-2">({selectedSubmission.rating} / 5)</span>
+                    </h4>
+                  </div>
+                  <span className={`badge rounded-pill fs-6 px-3 py-2 ${
+                    selectedSubmission.category === 'Positive' ? 'bg-success text-white' : 
+                    selectedSubmission.category === 'Negative' ? 'bg-danger text-white' : 
+                    'bg-warning text-dark'
+                  }`}>
+                    {selectedSubmission.category} Sentiment
+                  </span>
+                </div>
+
+                <h6 className="fw-bold text-main mb-2">Service Questionnaire Ratings</h6>
+                <div className="row g-2 mb-4">
+                  {Object.entries(selectedSubmission.questionAnswers || {}).map(([q, val], idx) => (
+                    <div className="col-md-6" key={idx}>
+                      <div className="d-flex justify-content-between align-items-center bg-white border p-2 rounded small">
+                        <span className="text-muted">{q}</span>
+                        <span className="fw-bold text-primary">{val || 'Not rated'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <h6 className="fw-bold text-main mb-2">Patient Comments & Suggestions</h6>
+                <div className="bg-light p-3 rounded border text-main">
+                  {selectedSubmission.feedbackText ? selectedSubmission.feedbackText : <em className="text-muted">No additional comments provided.</em>}
+                </div>
+              </div>
+              <div className="modal-footer border-0 pt-0">
+                <button className="btn btn-secondary rounded-pill px-4" onClick={() => setModalState(null)}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Add Dept Modal */}
       {modalState === 'addDept' && (
         <div className="modal fade show d-block" tabIndex="-1">

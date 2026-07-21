@@ -21,6 +21,67 @@ const DEFAULT_DEPARTMENTS = {
   }
 };
 
+const SAMPLE_DEMO_FEEDBACKS = [
+  {
+    id: "FB-OPD-101",
+    feedbackType: "OPD",
+    patientName: "Ramesh Sharma",
+    mobile: "9876543210",
+    age: 58,
+    gender: "Male",
+    rating: 5,
+    category: "Positive",
+    questionAnswers: {
+      "Registration Experience": "Good",
+      "Waiting Time": "Good",
+      "Doctor's Behavior": "Excellent",
+      "Support Staff Behavior": "Excellent",
+      "Premises Cleanliness": "Good"
+    },
+    feedbackText: "Doctor was extremely thorough during my cataract consultation. Highly satisfied with the guidance.",
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+  },
+  {
+    id: "FB-IPD-102",
+    feedbackType: "IPD",
+    patientName: "Sunita Patil",
+    mobile: "9123456789",
+    age: 64,
+    gender: "Female",
+    rating: 4,
+    category: "Positive",
+    questionAnswers: {
+      "Admission Process": "Good",
+      "Nursing Care": "Excellent",
+      "Doctor's Care": "Excellent",
+      "Room Cleanliness": "Good",
+      "Food & Diet": "Average",
+      "Discharge Process": "Good"
+    },
+    feedbackText: "Post-surgery care in the ward was very attentive. Nursing staff took great care of me.",
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+  },
+  {
+    id: "FB-OPD-103",
+    feedbackType: "OPD",
+    patientName: "Anonymous",
+    mobile: "",
+    age: 32,
+    gender: "Male",
+    rating: 3,
+    category: "Neutral",
+    questionAnswers: {
+      "Registration Experience": "Average",
+      "Waiting Time": "Poor",
+      "Doctor's Behavior": "Good",
+      "Support Staff Behavior": "Average",
+      "Premises Cleanliness": "Good"
+    },
+    feedbackText: "The consultation was good, but the waiting time in the afternoon OPD counter was a bit long.",
+    createdAt: new Date(Date.now() - 86400000 * 12).toISOString()
+  }
+];
+
 const ADMIN_PIN = process.env.REACT_APP_ADMIN_PIN || "1234";
 
 export default function App() {
@@ -51,6 +112,7 @@ export default function App() {
   const [adminPinInput, setAdminPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState('Feedback submitted successfully! Thank you.');
 
   // Close modals on Escape key press
   useEffect(() => {
@@ -74,6 +136,23 @@ export default function App() {
     const updatedFeedbacks = [newFeedback, ...feedbacks];
     setFeedbacks(updatedFeedbacks);
     localStorage.setItem('hospitalFeedbacks', JSON.stringify(updatedFeedbacks));
+    setToastMsg('Feedback submitted successfully! Thank you.');
+    setShowToast(true);
+  };
+
+  const handleDeleteFeedback = (feedbackId) => {
+    const updatedFeedbacks = feedbacks.filter(f => f.id !== feedbackId);
+    setFeedbacks(updatedFeedbacks);
+    localStorage.setItem('hospitalFeedbacks', JSON.stringify(updatedFeedbacks));
+    setToastMsg('Feedback entry removed.');
+    setShowToast(true);
+  };
+
+  const handleSeedDemoData = () => {
+    const combined = [...feedbacks, ...SAMPLE_DEMO_FEEDBACKS];
+    setFeedbacks(combined);
+    localStorage.setItem('hospitalFeedbacks', JSON.stringify(combined));
+    setToastMsg('Demo sample feedback loaded.');
     setShowToast(true);
   };
 
@@ -127,7 +206,9 @@ export default function App() {
             <Admin 
               feedbacks={feedbacks} 
               hospitalConfig={hospitalConfig} 
-              updateConfig={handleConfigUpdate} 
+              updateConfig={handleConfigUpdate}
+              deleteFeedback={handleDeleteFeedback}
+              seedDemoData={handleSeedDemoData}
             />
           ) : (
             <Home startFeedback={() => setCurrentPage('feedback')} />
@@ -153,7 +234,7 @@ export default function App() {
           <div className="d-flex">
             <div className="toast-body fw-medium py-3 px-4">
               <i className="bi bi-check-circle-fill me-2 fs-5"></i> 
-              Feedback submitted successfully! Thank you.
+              {toastMsg}
             </div>
             <button 
               type="button" 
