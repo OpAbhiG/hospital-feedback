@@ -25,7 +25,7 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
   return (
     <nav className="navbar navbar-expand-xl fixed-top shadow-sm py-2 bg-white">
       <div className="container-xl">
-        {/* Hospital Brand Logo (Double-click opens Admin Access) */}
+        {/* Hospital Brand Logo (Double-click logo opens Admin Access) */}
         <div 
           className="navbar-brand" 
           style={{ cursor: 'pointer' }} 
@@ -78,7 +78,8 @@ export default function Navbar({ isAdminActive, currentPage, goToPage, openLogin
                 </span>
               </div>
 
-              <div className="d-flex flex-column flex-xl-row align-items-xl-center gap-4 mt-3 mt-xl-0 pt-3 pt-xl-0 border-top border-xl-0">
+              {/* Clean contact & social icons section without top border */}
+              <div className="d-flex flex-column flex-xl-row align-items-xl-center gap-4 mt-3 mt-xl-0">
                 {/* Contact Information */}
                 <div className="d-flex flex-column flex-sm-row gap-3 gap-xl-4" style={{ fontSize: '0.95rem' }}>
                   <a href="tel:+919175239393" className="text-decoration-none nav-contact-link">
