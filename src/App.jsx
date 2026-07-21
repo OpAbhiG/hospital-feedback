@@ -103,7 +103,7 @@ export default function App() {
   };
 
   return (
-    <>
+    <div className="d-flex flex-column min-vh-100">
       <Navbar 
         isAdminActive={isAdminActive} 
         currentPage={currentPage} 
@@ -113,7 +113,7 @@ export default function App() {
       />
 
       {/* Page Routing */}
-      <main>
+      <main className="flex-grow-1">
         {currentPage === 'landing' && <Home startFeedback={() => setCurrentPage('feedback')} />}
         {currentPage === 'feedback' && (
           <Feedback 
@@ -122,14 +122,25 @@ export default function App() {
             goHome={() => setCurrentPage('landing')} 
           />
         )}
-        {currentPage === 'admin' && isAdminActive && (
-          <Admin 
-            feedbacks={feedbacks} 
-            hospitalConfig={hospitalConfig} 
-            updateConfig={handleConfigUpdate} 
-          />
+        {currentPage === 'admin' && (
+          isAdminActive ? (
+            <Admin 
+              feedbacks={feedbacks} 
+              hospitalConfig={hospitalConfig} 
+              updateConfig={handleConfigUpdate} 
+            />
+          ) : (
+            <Home startFeedback={() => setCurrentPage('feedback')} />
+          )
         )}
       </main>
+
+      {/* Minimal Footer */}
+      <footer className="footer bg-white border-top py-3 text-center text-muted small mt-auto">
+        <div className="container">
+          <span>© {new Date().getFullYear()} PBMA's H.V. Desai Eye Hospital. All rights reserved.</span>
+        </div>
+      </footer>
 
       {/* Toast Notification */}
       <div className="toast-container position-fixed bottom-0 end-0 p-3" style={{ zIndex: 1060 }}>
@@ -234,6 +245,6 @@ export default function App() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
