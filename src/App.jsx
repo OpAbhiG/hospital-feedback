@@ -18,6 +18,11 @@ const DEFAULT_DEPARTMENTS = {
     icon: "bi-hospital", 
     desc: "Inpatient Department (Admissions, surgeries, overnight stays)", 
     questions: ["Admission Process", "Nursing Care", "Doctor's Care", "Room Cleanliness", "Food & Diet", "Discharge Process"] 
+  },
+  "Optical Department": {
+    icon: "bi-glasses",
+    desc: "Optical Department (Spectacles, frames, lenses, and eye-wear fitting)",
+    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Premises Cleanliness"]
   }
 };
 
@@ -64,6 +69,25 @@ const SAMPLE_DEMO_FEEDBACKS = [
   {
     id: "FB-OPD-103",
     feedbackType: "OPD",
+    patientName: "Anonymous",
+    mobile: "",
+    age: 32,
+    gender: "Male",
+    rating: 3,
+    category: "Neutral",
+    questionAnswers: {
+      "Registration Experience": "Average",
+      "Waiting Time": "Poor",
+      "Doctor's Behavior": "Good",
+      "Support Staff Behavior": "Average",
+      "Premises Cleanliness": "Good"
+    },
+    feedbackText: "The consultation was good, but the waiting time in the afternoon OPD counter was a bit long.",
+    createdAt: new Date(Date.now() - 86400000 * 12).toISOString()
+  },
+  {
+    id: "FB-OPT-104",
+    feedbackType: "Optical Department",
     patientName: "Anonymous",
     mobile: "",
     age: 32,
