@@ -138,25 +138,27 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                   <h5 className="fw-bold mb-3 text-primary border-bottom pb-2">1. Patient Details</h5>
                   <div className="row g-3 mb-4">
                     <div className="col-md-6">
-                      <label htmlFor="patientName" className="form-label text-muted small fw-bold">Full Name</label>
+                      <label htmlFor="patientName" className="form-label text-muted small fw-bold">Patient Name <span className="text-danger">*</span></label>
                       <input 
                         id="patientName"
                         type="text" 
                         value={formData.patientName} 
                         onChange={(e) => setFormData({ ...formData, patientName: e.target.value })} 
                         className="form-control" 
-                        placeholder="Optional (or Anonymous)" 
+                        required
+                        placeholder="Enter patient name" 
                       />
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="mobile" className="form-label text-muted small fw-bold">Mobile Number</label>
+                      <label htmlFor="mobile" className="form-label text-muted small fw-bold">Mobile Number <span className="text-danger">*</span></label>
                       <input 
                         id="mobile"
                         type="tel" 
                         value={formData.mobile} 
                         onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} 
                         className="form-control" 
-                        placeholder="Optional 10-digit number" 
+                        required
+                        placeholder="Enter 10-digit mobile number" 
                         pattern="[0-9]{10}" 
                       />
                     </div>
@@ -292,12 +294,12 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
 
                   {/* Comments */}
                   <div className="mb-4">
-                    <label htmlFor="feedbackComments" className="form-label fw-bold text-primary">5. Any suggestions or comments?</label>
+                    <label htmlFor="feedbackComments" className="form-label fw-bold text-primary">5. Tell us about your experience</label>
                     <textarea 
                       id="feedbackComments"
                       className="form-control" 
                       rows="4" 
-                      placeholder="Tell us about your doctor consultation, nursing care, wait times, or cleanliness..." 
+                      placeholder="Tell us about your experience..." 
                       value={formData.feedbackText} 
                       onChange={(e) => setFormData({ ...formData, feedbackText: e.target.value })}
                     ></textarea>
