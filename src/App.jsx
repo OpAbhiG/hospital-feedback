@@ -109,7 +109,9 @@ const SAMPLE_DEMO_FEEDBACKS = [
 const ADMIN_PIN = process.env.REACT_APP_ADMIN_PIN || "1234";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('landing');
+  const [currentPage, setCurrentPage] = useState(() => {
+    return sessionStorage.getItem('isAdminActive') === 'true' ? 'admin' : 'landing';
+  });
   const [isAdminActive, setIsAdminActive] = useState(() => sessionStorage.getItem('isAdminActive') === 'true');
   
   // Lazy initializers for localStorage to optimize performance
