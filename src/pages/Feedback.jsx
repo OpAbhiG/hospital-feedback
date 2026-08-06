@@ -155,10 +155,16 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                         id="mobile"
                         type="tel" 
                         value={formData.mobile} 
-                        onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} 
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          if (val.length <= 10) {
+                            setFormData({ ...formData, mobile: val });
+                          }
+                        }} 
                         className="form-control" 
                         required
                         placeholder="Enter 10-digit mobile number" 
+                        maxLength={10}
                         pattern="[0-9]{10}" 
                       />
                     </div>
