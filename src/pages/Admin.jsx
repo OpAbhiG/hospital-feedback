@@ -5,13 +5,13 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
 
 export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfig, deleteFeedback, seedDemoData }) {
-  const [searchTerm, setSearchTerm] = useState('');
   const [sortMode, setSortMode] = useState('newest');
-  const [filterDept, setFilterDept] = useState('ALL');
-  const [filterSentiment, setFilterSentiment] = useState('ALL');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [exportDept, setExportDept] = useState('ALL');
+  const [uncheckedDepts, setUncheckedDepts] = useState([]);
+  const [uncheckedSentiments, setUncheckedSentiments] = useState([]);
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   // Modals specific to Admin
   const [modalState, setModalState] = useState(null); // 'addDept' | 'addQuestion' | 'confirm' | 'viewDetail' | null
@@ -36,18 +36,18 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       result = result.filter(f => f.createdAt && new Date(f.createdAt) <= end);
     }
 
-    // Filter by Department
-    if (filterDept !== 'ALL') {
-      result = result.filter(f => f.feedbackType === filterDept);
+    // Filter by unchecked Departments
+    if (uncheckedDepts.length > 0) {
+      result = result.filter(f => f.feedbackType && !uncheckedDepts.includes(f.feedbackType));
     }
 
-    // Filter by Sentiment
-    if (filterSentiment !== 'ALL') {
-      result = result.filter(f => f.category === filterSentiment);
+    // Filter by unchecked Sentiments
+    if (uncheckedSentiments.length > 0) {
+      result = result.filter(f => f.category && !uncheckedSentiments.includes(f.category));
     }
 
     return result;
-  }, [feedbacks, fromDate, toDate, filterDept, filterSentiment]);
+  }, [feedbacks, fromDate, toDate, uncheckedDepts, uncheckedSentiments]);
 
   // Memoized Chart Calculations for high performance
   const chartData = useMemo(() => {
@@ -112,16 +112,6 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   const filteredTableData = useMemo(() => {
     let result = [...dateFilteredFeedbacks];
 
-    // Filter by Search Query
-    if (searchTerm.trim()) {
-      const lower = searchTerm.toLowerCase().trim();
-      result = result.filter(f => 
-        (f.patientName && f.patientName.toLowerCase().includes(lower)) ||
-        (f.feedbackType && f.feedbackType.toLowerCase().includes(lower)) ||
-        (f.feedbackText && f.feedbackText.toLowerCase().includes(lower))
-      );
-    }
-
     // Sort Modes
     if (sortMode === 'newest') result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     if (sortMode === 'oldest') result.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -129,7 +119,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     if (sortMode === 'lowest') result.sort((a, b) => (a.rating || 0) - (b.rating || 0));
 
     return result;
-  }, [dateFilteredFeedbacks, searchTerm, sortMode]);
+  }, [dateFilteredFeedbacks, sortMode]);
 
   // Actions
   const saveDept = () => {
@@ -203,29 +193,12 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
           </h2>
           <p className="text-muted m-0">Real-time patient feedback performance overview</p>
         </div>
-        <div className="d-flex gap-2 align-items-center flex-wrap">
+        <div className="d-flex gap-2 align-items-center">
           {feedbacks.length === 0 && seedDemoData && (
             <button onClick={seedDemoData} className="btn btn-outline-primary rounded-pill px-4 shadow-sm fw-medium">
               <i className="bi bi-magic me-1"></i> Load Demo Data
             </button>
           )}
-          <div className="d-flex align-items-center gap-1 bg-white border rounded px-2 py-1 shadow-sm">
-            <span className="small text-muted fw-bold me-1">Export:</span>
-            <select 
-              className="form-select form-select-sm border-0 p-0 shadow-none" 
-              style={{ width: '150px', fontSize: '0.85rem', outline: 'none' }}
-              value={exportDept} 
-              onChange={(e) => setExportDept(e.target.value)}
-            >
-              <option value="ALL">All Departments</option>
-              {Object.keys(hospitalConfig).map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <button onClick={() => exportCSV(exportDept)} className="btn btn-success rounded-pill px-4 shadow-sm fw-medium">
-            <i className="bi bi-file-earmark-spreadsheet me-2"></i> Export CSV
-          </button>
         </div>
       </div>
 
@@ -354,35 +327,24 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
           </div>
 
           {/* Multi-Filter Toolbar */}
-          <div className="d-flex flex-wrap gap-2 w-100 justify-content-lg-end align-items-center" style={{ maxWidth: '950px' }}>
-            {/* Search Box */}
-            <div style={{ minWidth: '150px', flex: '1 1 150px' }}>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Search by name, comment..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-              />
-            </div>
-
+          <div className="d-flex flex-wrap gap-2 align-items-center justify-content-lg-end" style={{ zIndex: 10 }}>
             {/* Date Filters */}
             <div className="d-flex align-items-center gap-1 bg-white border rounded px-2 py-1 shadow-sm">
               <span className="small text-muted fw-bold">From:</span>
               <input 
                 type="date" 
-                className="form-control form-control-sm border-0 p-0" 
+                className="form-control form-control-sm border-0 p-0 shadow-none" 
                 value={fromDate} 
                 onChange={(e) => setFromDate(e.target.value)} 
-                style={{ width: '115px', fontSize: '0.85rem' }}
+                style={{ width: '115px', fontSize: '0.85rem', outline: 'none' }}
               />
               <span className="small text-muted fw-bold ms-1">To:</span>
               <input 
                 type="date" 
-                className="form-control form-control-sm border-0 p-0" 
+                className="form-control form-control-sm border-0 p-0 shadow-none" 
                 value={toDate} 
                 onChange={(e) => setToDate(e.target.value)} 
-                style={{ width: '115px', fontSize: '0.85rem' }}
+                style={{ width: '115px', fontSize: '0.85rem', outline: 'none' }}
               />
               {(fromDate || toDate) && (
                 <button 
@@ -396,44 +358,140 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
               )}
             </div>
 
-            {/* Department Filter */}
-            <select 
-              className="form-select" 
-              style={{ width: '120px' }} 
-              value={filterDept} 
-              onChange={(e) => setFilterDept(e.target.value)}
-            >
-              <option value="ALL">All Depts</option>
-              {Object.keys(hospitalConfig).map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+            {/* Unified Custom Dropdown */}
+            <div className="dropdown position-relative">
+              <button 
+                className="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2 fw-medium shadow-sm" 
+                type="button" 
+                onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+              >
+                <i className="bi bi-funnel-fill"></i> Filter & Sort
+                {(uncheckedDepts.length > 0 || uncheckedSentiments.length > 0) && (
+                  <span className="badge bg-danger rounded-pill" style={{ fontSize: '0.7rem' }}>!</span>
+                )}
+              </button>
+              
+              {filterDropdownOpen && (
+                <>
+                  <div 
+                    className="position-fixed top-0 start-0 end-0 bottom-0" 
+                    style={{ zIndex: 999 }} 
+                    onClick={() => setFilterDropdownOpen(false)}
+                  ></div>
+                  <div 
+                    className="dropdown-menu show p-3 shadow-lg border-0 rounded-3 mt-2 position-absolute end-0" 
+                    style={{ zIndex: 1000, minWidth: '280px', backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.1)' }}
+                  >
+                    {/* Sort Section */}
+                    <h6 className="dropdown-header px-0 fw-bold text-primary mb-2 border-bottom pb-1">Sort By</h6>
+                    <div className="mb-3">
+                      {[
+                        { value: 'newest', label: 'Newest First' },
+                        { value: 'oldest', label: 'Oldest First' },
+                        { value: 'highest', label: 'Highest Rating' },
+                        { value: 'lowest', label: 'Lowest Rating' }
+                      ].map(opt => (
+                        <div className="form-check mb-1" key={opt.value}>
+                          <input 
+                            className="form-check-input" 
+                            type="radio" 
+                            name="sortModeRadio" 
+                            id={`sort-${opt.value}`} 
+                            value={opt.value}
+                            checked={sortMode === opt.value}
+                            onChange={() => setSortMode(opt.value)}
+                          />
+                          <label className="form-check-label small fw-medium text-main" htmlFor={`sort-${opt.value}`}>
+                            {opt.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
 
-            {/* Sentiment Filter */}
-            <select 
-              className="form-select" 
-              style={{ width: '120px' }} 
-              value={filterSentiment} 
-              onChange={(e) => setFilterSentiment(e.target.value)}
-            >
-              <option value="ALL">All Feelings</option>
-              <option value="Positive">Positive</option>
-              <option value="Neutral">Neutral</option>
-              <option value="Negative">Negative</option>
-            </select>
+                    {/* Departments Section */}
+                    <h6 className="dropdown-header px-0 fw-bold text-primary mb-2 border-bottom pb-1">Departments</h6>
+                    <div className="mb-3" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                      {Object.keys(hospitalConfig).map(dept => {
+                        const isChecked = !uncheckedDepts.includes(dept);
+                        return (
+                          <div className="form-check mb-1" key={dept}>
+                            <input 
+                              className="form-check-input" 
+                              type="checkbox" 
+                              id={`filter-dept-${dept}`}
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setUncheckedDepts([...uncheckedDepts, dept]);
+                                } else {
+                                  setUncheckedDepts(uncheckedDepts.filter(d => d !== dept));
+                                }
+                              }}
+                            />
+                            <label className="form-check-label small fw-medium text-main" htmlFor={`filter-dept-${dept}`}>
+                              {dept}
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-            {/* Sort Mode */}
-            <select 
-              className="form-select" 
-              style={{ width: '130px' }} 
-              value={sortMode} 
-              onChange={(e) => setSortMode(e.target.value)}
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="highest">Highest Rating</option>
-              <option value="lowest">Lowest Rating</option>
-            </select>
+                    {/* Sentiments Section */}
+                    <h6 className="dropdown-header px-0 fw-bold text-primary mb-2 border-bottom pb-1">Sentiments</h6>
+                    <div>
+                      {[
+                        { value: 'Positive', label: '😊 Positive' },
+                        { value: 'Neutral', label: '😐 Neutral' },
+                        { value: 'Negative', label: '😞 Negative' }
+                      ].map(opt => {
+                        const isChecked = !uncheckedSentiments.includes(opt.value);
+                        return (
+                          <div className="form-check mb-1" key={opt.value}>
+                            <input 
+                              className="form-check-input" 
+                              type="checkbox" 
+                              id={`filter-sent-${opt.value}`}
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setUncheckedSentiments([...uncheckedSentiments, opt.value]);
+                                } else {
+                                  setUncheckedSentiments(uncheckedSentiments.filter(s => s !== opt.value));
+                                }
+                              }}
+                            />
+                            <label className="form-check-label small fw-medium text-main" htmlFor={`filter-sent-${opt.value}`}>
+                              {opt.label}
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Export Dropdown & Button (side-by-side with Filter dropdown) */}
+            <div className="d-flex align-items-center gap-2">
+              <div className="d-flex align-items-center gap-1 bg-white border rounded px-2 py-1 shadow-sm">
+                <span className="small text-muted fw-bold me-1">Export:</span>
+                <select 
+                  className="form-select form-select-sm border-0 p-0 shadow-none" 
+                  style={{ width: '130px', fontSize: '0.85rem', outline: 'none' }}
+                  value={exportDept} 
+                  onChange={(e) => setExportDept(e.target.value)}
+                >
+                  <option value="ALL">All Depts</option>
+                  {Object.keys(hospitalConfig).map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+              </div>
+              <button onClick={() => exportCSV(exportDept)} className="btn btn-success rounded-pill px-3 py-2 fs-6 shadow-sm fw-bold d-flex align-items-center gap-1">
+                <i className="bi bi-file-earmark-spreadsheet"></i> Export
+              </button>
+            </div>
           </div>
         </div>
 
