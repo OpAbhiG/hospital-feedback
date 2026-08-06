@@ -11,6 +11,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   const [filterSentiment, setFilterSentiment] = useState('ALL');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [exportDept, setExportDept] = useState('ALL');
 
   // Modals specific to Admin
   const [modalState, setModalState] = useState(null); // 'addDept' | 'addQuestion' | 'confirm' | 'viewDetail' | null
@@ -163,12 +164,18 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     setModalState('confirm');
   };
 
-  const exportCSV = () => {
-    if (!feedbacks.length) return alert("No feedback submissions available to export.");
+  const exportCSV = (targetDept = 'ALL') => {
+    const dataToExport = targetDept === 'ALL' 
+      ? feedbacks 
+      : feedbacks.filter(f => f.feedbackType === targetDept);
+
+    if (!dataToExport.length) {
+      return alert(`No feedback submissions available to export for ${targetDept === 'ALL' ? 'all departments' : targetDept + ' department'}.`);
+    }
     
     // Add UTF-8 BOM for Microsoft Excel compatibility
     let csv = "\uFEFFFeedback ID,Date,Department,Patient Name,Mobile,Age,Gender,Rating,Category,Comments\n";
-    csv += feedbacks.map(f => {
+    csv += dataToExport.map(f => {
       const dateStr = f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '';
       const name = (f.patientName || '').replace(/"/g, '""');
       const mobile = (f.mobile || '');
@@ -180,7 +187,8 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Hospital_Feedback_Export_${new Date().toISOString().slice(0, 10)}.csv`;
+    const fileNameSuffix = targetDept === 'ALL' ? 'All_Depts' : targetDept.replace(/\s+/g, '_');
+    link.download = `Hospital_Feedback_Export_${fileNameSuffix}_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -195,13 +203,27 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
           </h2>
           <p className="text-muted m-0">Real-time patient feedback performance overview</p>
         </div>
-        <div className="d-flex gap-2">
+        <div className="d-flex gap-2 align-items-center flex-wrap">
           {feedbacks.length === 0 && seedDemoData && (
             <button onClick={seedDemoData} className="btn btn-outline-primary rounded-pill px-4 shadow-sm fw-medium">
               <i className="bi bi-magic me-1"></i> Load Demo Data
             </button>
           )}
-          <button onClick={exportCSV} className="btn btn-success rounded-pill px-4 shadow-sm fw-medium">
+          <div className="d-flex align-items-center gap-1 bg-white border rounded px-2 py-1 shadow-sm">
+            <span className="small text-muted fw-bold me-1">Export:</span>
+            <select 
+              className="form-select form-select-sm border-0 p-0 shadow-none" 
+              style={{ width: '150px', fontSize: '0.85rem', outline: 'none' }}
+              value={exportDept} 
+              onChange={(e) => setExportDept(e.target.value)}
+            >
+              <option value="ALL">All Departments</option>
+              {Object.keys(hospitalConfig).map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
+          <button onClick={() => exportCSV(exportDept)} className="btn btn-success rounded-pill px-4 shadow-sm fw-medium">
             <i className="bi bi-file-earmark-spreadsheet me-2"></i> Export CSV
           </button>
         </div>
