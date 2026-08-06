@@ -9,6 +9,8 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   const [sortMode, setSortMode] = useState('newest');
   const [filterDept, setFilterDept] = useState('ALL');
   const [filterSentiment, setFilterSentiment] = useState('ALL');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   // Modals specific to Admin
   const [modalState, setModalState] = useState(null); // 'addDept' | 'addQuestion' | 'confirm' | 'viewDetail' | null
@@ -16,6 +18,35 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   const [newDept, setNewDept] = useState({ name: '', desc: '' });
   const [newQuestion, setNewQuestion] = useState({ dept: '', text: '' });
   const [confirmAction, setConfirmAction] = useState({ msg: '', onConfirm: null });
+
+  // Filtered feedbacks (applies Date Range, Dept, Sentiment)
+  const dateFilteredFeedbacks = useMemo(() => {
+    let result = [...feedbacks];
+
+    // Filter by Date Range
+    if (fromDate) {
+      const start = new Date(fromDate);
+      start.setHours(0, 0, 0, 0);
+      result = result.filter(f => f.createdAt && new Date(f.createdAt) >= start);
+    }
+    if (toDate) {
+      const end = new Date(toDate);
+      end.setHours(23, 59, 59, 999);
+      result = result.filter(f => f.createdAt && new Date(f.createdAt) <= end);
+    }
+
+    // Filter by Department
+    if (filterDept !== 'ALL') {
+      result = result.filter(f => f.feedbackType === filterDept);
+    }
+
+    // Filter by Sentiment
+    if (filterSentiment !== 'ALL') {
+      result = result.filter(f => f.category === filterSentiment);
+    }
+
+    return result;
+  }, [feedbacks, fromDate, toDate, filterDept, filterSentiment]);
 
   // Memoized Chart Calculations for high performance
   const chartData = useMemo(() => {
@@ -28,18 +59,18 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     for (let i = 5; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       trendLabels.push(monthNames[d.getMonth()]);
-      const count = feedbacks.filter(f => {
+      const count = dateFilteredFeedbacks.filter(f => {
         const date = new Date(f.createdAt);
         return date.getMonth() === d.getMonth() && date.getFullYear() === d.getFullYear();
       }).length;
       trendData.push(count);
     }
 
-    const posCount = feedbacks.filter(f => f.category === 'Positive').length;
-    const neuCount = feedbacks.filter(f => f.category === 'Neutral').length;
-    const negCount = feedbacks.filter(f => f.category === 'Negative').length;
+    const posCount = dateFilteredFeedbacks.filter(f => f.category === 'Positive').length;
+    const neuCount = dateFilteredFeedbacks.filter(f => f.category === 'Neutral').length;
+    const negCount = dateFilteredFeedbacks.filter(f => f.category === 'Negative').length;
 
-    const hasData = feedbacks.length > 0;
+    const hasData = dateFilteredFeedbacks.length > 0;
 
     return {
       lineData: {
@@ -70,25 +101,15 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       posCount,
       neuCount,
       negCount,
-      avgRating: feedbacks.length 
-        ? (feedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) / feedbacks.length).toFixed(1) 
+      avgRating: dateFilteredFeedbacks.length 
+        ? (dateFilteredFeedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) / dateFilteredFeedbacks.length).toFixed(1) 
         : '0.0'
     };
-  }, [feedbacks]);
+  }, [dateFilteredFeedbacks]);
 
   // Filter & Sort Table Submissions
   const filteredTableData = useMemo(() => {
-    let result = [...feedbacks];
-
-    // Filter by Department
-    if (filterDept !== 'ALL') {
-      result = result.filter(f => f.feedbackType === filterDept);
-    }
-
-    // Filter by Sentiment
-    if (filterSentiment !== 'ALL') {
-      result = result.filter(f => f.category === filterSentiment);
-    }
+    let result = [...dateFilteredFeedbacks];
 
     // Filter by Search Query
     if (searchTerm.trim()) {
@@ -107,7 +128,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     if (sortMode === 'lowest') result.sort((a, b) => (a.rating || 0) - (b.rating || 0));
 
     return result;
-  }, [feedbacks, searchTerm, sortMode, filterDept, filterSentiment]);
+  }, [dateFilteredFeedbacks, searchTerm, sortMode]);
 
   // Actions
   const saveDept = () => {
@@ -191,7 +212,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
         <div className="col-md-3 col-sm-6">
           <div className="glass stat-card card p-4 h-100">
             <h6 className="text-muted fw-semibold mb-2">Total Submissions</h6>
-            <h2 className="text-primary fw-bold mb-0">{feedbacks.length}</h2>
+            <h2 className="text-primary fw-bold mb-0">{dateFilteredFeedbacks.length}</h2>
           </div>
         </div>
         <div className="col-md-3 col-sm-6">
@@ -311,19 +332,52 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
           </div>
 
           {/* Multi-Filter Toolbar */}
-          <div className="d-flex flex-wrap gap-2 w-100" style={{ maxWidth: '650px' }}>
-            <input 
-              type="text" 
-              className="form-control flex-grow-1" 
-              placeholder="Search by name, comment..." 
-              value={searchTerm} 
-              onChange={(e) => setSearchTerm(e.target.value)} 
-            />
+          <div className="d-flex flex-wrap gap-2 w-100 justify-content-lg-end align-items-center" style={{ maxWidth: '950px' }}>
+            {/* Search Box */}
+            <div style={{ minWidth: '150px', flex: '1 1 150px' }}>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Search by name, comment..." 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+              />
+            </div>
+
+            {/* Date Filters */}
+            <div className="d-flex align-items-center gap-1 bg-white border rounded px-2 py-1 shadow-sm">
+              <span className="small text-muted fw-bold">From:</span>
+              <input 
+                type="date" 
+                className="form-control form-control-sm border-0 p-0" 
+                value={fromDate} 
+                onChange={(e) => setFromDate(e.target.value)} 
+                style={{ width: '115px', fontSize: '0.85rem' }}
+              />
+              <span className="small text-muted fw-bold ms-1">To:</span>
+              <input 
+                type="date" 
+                className="form-control form-control-sm border-0 p-0" 
+                value={toDate} 
+                onChange={(e) => setToDate(e.target.value)} 
+                style={{ width: '115px', fontSize: '0.85rem' }}
+              />
+              {(fromDate || toDate) && (
+                <button 
+                  type="button"
+                  className="btn btn-sm btn-link text-danger p-0 ms-1 border-0" 
+                  onClick={() => { setFromDate(''); setToDate(''); }}
+                  title="Clear dates"
+                >
+                  <i className="bi bi-x-circle-fill"></i>
+                </button>
+              )}
+            </div>
 
             {/* Department Filter */}
             <select 
               className="form-select" 
-              style={{ width: '130px' }} 
+              style={{ width: '120px' }} 
               value={filterDept} 
               onChange={(e) => setFilterDept(e.target.value)}
             >
@@ -336,7 +390,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
             {/* Sentiment Filter */}
             <select 
               className="form-select" 
-              style={{ width: '130px' }} 
+              style={{ width: '120px' }} 
               value={filterSentiment} 
               onChange={(e) => setFilterSentiment(e.target.value)}
             >
