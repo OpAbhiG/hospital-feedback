@@ -169,29 +169,27 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       />
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="age" className="form-label text-muted small fw-bold">Age <span className="text-danger">*</span></label>
+                      <label htmlFor="age" className="form-label text-muted small fw-bold">Age</label>
                       <input 
                         id="age"
                         type="number" 
                         value={formData.age} 
                         onChange={(e) => setFormData({ ...formData, age: e.target.value })} 
                         className="form-control" 
-                        required 
                         min="1" 
                         max="120" 
-                        placeholder="e.g. 45"
+                        placeholder="Optional (e.g. 45)"
                       />
                     </div>
                     <div className="col-md-6">
-                      <label htmlFor="gender" className="form-label text-muted small fw-bold">Gender <span className="text-danger">*</span></label>
+                      <label htmlFor="gender" className="form-label text-muted small fw-bold">Gender</label>
                       <select 
                         id="gender"
                         value={formData.gender} 
                         onChange={(e) => setFormData({ ...formData, gender: e.target.value })} 
-                        className="form-select" 
-                        required
+                        className="form-select"
                       >
-                        <option value="" disabled>Select Gender</option>
+                        <option value="">Select Gender (Optional)</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
