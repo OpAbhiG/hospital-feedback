@@ -13,7 +13,6 @@ const INITIAL_FORM_DATA = { patientName: '', mobile: '', age: '', gender: '', fe
 export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const [step, setStep] = useState('select-dept'); // 'select-dept' | 'form' | 'thank-you'
   const [currentType, setCurrentType] = useState('');
-  const [currentCategory, setCurrentCategory] = useState('Positive');
   const [rating, setRating] = useState(5);
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [questionAnswers, setQuestionAnswers] = useState({});
@@ -31,7 +30,6 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
     setFormData(INITIAL_FORM_DATA);
     setQuestionAnswers({});
     setRating(5);
-    setCurrentCategory('Positive');
     setStep('select-dept');
     goHome();
   };
@@ -40,7 +38,6 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
     setFormData(INITIAL_FORM_DATA);
     setQuestionAnswers({});
     setRating(5);
-    setCurrentCategory('Positive');
     setStep('select-dept');
   };
 
@@ -48,11 +45,12 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
     e.preventDefault();
     
     if (formData.recommendScore === null) {
-      alert("Please select a recommendation score (Question 6).");
+      alert("Please select a recommendation score (Question 5).");
       return;
     }
 
     const uniqueId = 'FB-' + Math.random().toString(36).substring(2, 11).toUpperCase();
+    const computedCategory = rating >= 4 ? 'Positive' : rating === 3 ? 'Neutral' : 'Negative';
 
     const feedbackObj = {
       id: uniqueId,
@@ -62,7 +60,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
       age: formData.age ? parseInt(formData.age, 10) : null,
       gender: formData.gender || 'Not specified',
       rating,
-      category: currentCategory,
+      category: computedCategory,
       questionAnswers,
       feedbackText: formData.feedbackText.trim(),
       recommendScore: formData.recommendScore,
@@ -237,35 +235,9 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                     })}
                   </div>
 
-                  {/* Sentiment Category Buttons */}
-                  <h5 className="fw-bold mt-4 mb-3 text-primary border-bottom pb-2">3. General Sentiment</h5>
-                  <div className="btn-group w-100 mb-4 gap-2 d-flex flex-wrap flex-md-nowrap" role="group">
-                    <button 
-                      type="button" 
-                      className={`category-btn btn btn-outline-success flex-fill py-2 ${currentCategory === 'Positive' ? 'active-positive' : ''}`} 
-                      onClick={() => setCurrentCategory('Positive')}
-                    >
-                      😊 Positive
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`category-btn btn btn-outline-warning flex-fill py-2 ${currentCategory === 'Neutral' ? 'active-neutral' : ''}`} 
-                      onClick={() => setCurrentCategory('Neutral')}
-                    >
-                      😐 Neutral
-                    </button>
-                    <button 
-                      type="button" 
-                      className={`category-btn btn btn-outline-danger flex-fill py-2 ${currentCategory === 'Negative' ? 'active-negative' : ''}`} 
-                      onClick={() => setCurrentCategory('Negative')}
-                    >
-                      😞 Negative
-                    </button>
-                  </div>
-
                   {/* Specific Service Ratings */}
                   <div className="mb-4 bg-light p-3 p-md-4 rounded-3 border">
-                    <h6 className="mb-3 fw-bold text-main border-bottom pb-2">4. Specific Department Services</h6>
+                    <h6 className="mb-3 fw-bold text-main border-bottom pb-2">3. Specific Department Services</h6>
                     <div className="row g-3">
                       {hospitalConfig[currentType]?.questions.map((q, idx) => (
                         <div className="col-md-6" key={idx}>
@@ -296,6 +268,32 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                                 </div>
                               );
                             })}
+                            {/* If it's a Call Center question, render N/A option */}
+                            {q.toLowerCase().includes('call center') && (
+                              <div 
+                                title="Not Applicable"
+                                className="emoji-option d-flex align-items-center justify-content-center fw-bold rounded-circle border"
+                                style={{ 
+                                  width: '32px', 
+                                  height: '32px', 
+                                  fontSize: '0.75rem',
+                                  cursor: 'pointer',
+                                  opacity: questionAnswers[q] === 'N/A' ? 1 : 0.25,
+                                  backgroundColor: questionAnswers[q] === 'N/A' ? '#e9ecef' : 'transparent',
+                                  color: questionAnswers[q] === 'N/A' ? '#0d6efd' : '#6c757d',
+                                  borderColor: questionAnswers[q] === 'N/A' ? '#0d6efd' : '#cbd5e1',
+                                  transition: 'all 0.2s'
+                                }}
+                                onClick={() => setQuestionAnswers({ ...questionAnswers, [q]: 'N/A' })}
+                                tabIndex={0}
+                                role="radio"
+                                aria-checked={questionAnswers[q] === 'N/A'}
+                                aria-label={`${q}: Not Applicable`}
+                                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQuestionAnswers({ ...questionAnswers, [q]: 'N/A' })}
+                              >
+                                N/A
+                              </div>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -304,7 +302,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
 
                   {/* Comments */}
                   <div className="mb-4">
-                    <label htmlFor="feedbackComments" className="form-label fw-bold text-primary">5. Tell us about your experience</label>
+                    <label htmlFor="feedbackComments" className="form-label fw-bold text-primary">4. Tell us about your experience</label>
                     <textarea 
                       id="feedbackComments"
                       className="form-control" 
@@ -317,7 +315,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
 
                   {/* Recommendation Score (NPS) */}
                   <div className="mb-4 border-top pt-4">
-                    <label className="form-label fw-bold text-primary mb-3">6. How likely are you to recommend us to your friends and family?</label>
+                    <label className="form-label fw-bold text-primary mb-3">5. How likely are you to recommend us to your friends and family?</label>
                     <div className="d-flex justify-content-between gap-1 mb-3 flex-wrap flex-md-nowrap" role="radiogroup" aria-label="Recommendation Score">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
                         const isSelected = formData.recommendScore === num;

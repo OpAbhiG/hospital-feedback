@@ -12,7 +12,7 @@ const DEFAULT_DEPARTMENTS = {
   "OPD": { 
     icon: "bi-person-walking", 
     desc: "Outpatient Department (Consultations, regular eye checkups)", 
-    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Premises Cleanliness"] 
+    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Call Center Experience", "Premises Cleanliness"] 
   },
   "IPD": { 
     icon: "bi-hospital", 
