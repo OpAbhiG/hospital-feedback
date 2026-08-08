@@ -164,13 +164,14 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     }
     
     // Add UTF-8 BOM for Microsoft Excel compatibility
-    let csv = "\uFEFFFeedback ID,Date,Department,Patient Name,Mobile,Age,Gender,Rating,Category,Comments\n";
+    let csv = "\uFEFFFeedback ID,Date,Department,Patient Name,Mobile,Age,Gender,Rating,Category,Comments,Recommend Score\n";
     csv += dataToExport.map(f => {
       const dateStr = f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '';
       const name = (f.patientName || '').replace(/"/g, '""');
       const mobile = (f.mobile || '');
       const comments = (f.feedbackText || '').replace(/"/g, '""').replace(/\n/g, ' ');
-      return `"${f.id}","${dateStr}","${f.feedbackType}","${name}","${mobile}","${f.age || ''}","${f.gender || ''}","${f.rating || ''}","${f.category || ''}","${comments}"`;
+      const nps = f.recommendScore !== undefined && f.recommendScore !== null ? f.recommendScore : '';
+      return `"${f.id}","${dateStr}","${f.feedbackType}","${name}","${mobile}","${f.age || ''}","${f.gender || ''}","${f.rating || ''}","${f.category || ''}","${comments}","${nps}"`;
     }).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -618,9 +619,23 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                 </div>
 
                 <h6 className="fw-bold text-main mb-2">Patient Comments & Suggestions</h6>
-                <div className="bg-light p-3 rounded border text-main">
+                <div className="bg-light p-3 rounded border text-main mb-4">
                   {selectedSubmission.feedbackText ? selectedSubmission.feedbackText : <em className="text-muted">No additional comments provided.</em>}
                 </div>
+
+                {selectedSubmission.recommendScore !== undefined && selectedSubmission.recommendScore !== null && (
+                  <div className="p-3 bg-light rounded-3 border">
+                    <span className="text-muted small d-block mb-1 fw-bold text-uppercase opacity-75">Recommendation Score (NPS)</span>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="badge bg-primary fs-6 px-3 py-2 rounded-pill">{selectedSubmission.recommendScore} / 10</span>
+                      <span className="fw-semibold text-main" style={{ fontSize: '0.95rem' }}>
+                        {selectedSubmission.recommendScore >= 9 ? '😊 Happy (Likely to recommend)' : 
+                         selectedSubmission.recommendScore >= 7 ? '😐 Neutral' : 
+                         '😞 Sad (Unlikely to recommend)'}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="modal-footer border-0 pt-0">
                 <button className="btn btn-secondary rounded-pill px-4" onClick={() => setModalState(null)}>Close</button>

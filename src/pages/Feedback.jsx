@@ -8,7 +8,7 @@ const EMOJI_SCALE = [
   { value: 5, text: 'Excellent', emoji: '🤩' }
 ];
 
-const INITIAL_FORM_DATA = { patientName: '', mobile: '', age: '', gender: '', feedbackText: '' };
+const INITIAL_FORM_DATA = { patientName: '', mobile: '', age: '', gender: '', feedbackText: '', recommendScore: null };
 
 export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const [step, setStep] = useState('select-dept'); // 'select-dept' | 'form' | 'thank-you'
@@ -47,6 +47,11 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    if (formData.recommendScore === null) {
+      alert("Please select a recommendation score (Question 6).");
+      return;
+    }
+
     const uniqueId = 'FB-' + Math.random().toString(36).substring(2, 11).toUpperCase();
 
     const feedbackObj = {
@@ -60,6 +65,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
       category: currentCategory,
       questionAnswers,
       feedbackText: formData.feedbackText.trim(),
+      recommendScore: formData.recommendScore,
       createdAt: new Date().toISOString()
     };
 
@@ -307,6 +313,48 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       value={formData.feedbackText} 
                       onChange={(e) => setFormData({ ...formData, feedbackText: e.target.value })}
                     ></textarea>
+                  </div>
+
+                  {/* Recommendation Score (NPS) */}
+                  <div className="mb-4 border-top pt-4">
+                    <label className="form-label fw-bold text-primary mb-3">6. How likely are you to recommend us to your friends and family?</label>
+                    <div className="d-flex justify-content-between gap-1 mb-3 flex-wrap flex-md-nowrap" role="radiogroup" aria-label="Recommendation Score">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                        const isSelected = formData.recommendScore === num;
+                        return (
+                          <button
+                            key={num}
+                            type="button"
+                            className="btn btn-outline-primary flex-fill rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm"
+                            style={{ 
+                              width: '38px', 
+                              height: '38px', 
+                              fontSize: '1rem',
+                              fontWeight: 'bold',
+                              backgroundColor: isSelected ? 'var(--bs-primary)' : '#ffffff',
+                              color: isSelected ? '#ffffff' : 'var(--bs-primary)',
+                              borderColor: 'var(--bs-primary)',
+                              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                            }}
+                            onClick={() => setFormData({ ...formData, recommendScore: num })}
+                          >
+                            {num}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* NPS Emoji Labels */}
+                    <div className="d-flex justify-content-between text-muted px-1" style={{ fontSize: '0.85rem' }}>
+                      <div className="text-start">
+                        <span style={{ fontSize: '1.2rem' }}>😞</span> Unlikely (1-6)
+                      </div>
+                      <div className="text-center">
+                        <span style={{ fontSize: '1.2rem' }}>😐</span> Neutral (7-8)
+                      </div>
+                      <div className="text-end">
+                        <span style={{ fontSize: '1.2rem' }}>😊</span> Extremely Likely (9-10)
+                      </div>
+                    </div>
                   </div>
 
                   <button type="submit" className="btn btn-primary w-100 py-3 fs-5 fw-bold rounded-pill shadow-sm">
