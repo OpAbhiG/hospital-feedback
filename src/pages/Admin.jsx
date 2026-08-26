@@ -314,23 +314,16 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
 
       {/* NPS Overview Widget */}
       <div className="glass card p-4 mb-5 border-0">
-        <h5 className="mb-4 fw-bold text-main d-flex align-items-center gap-2">
-          <i className="bi bi-heart-pulse text-danger"></i> Net Promoter Score (NPS) Analysis
-        </h5>
+        <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2 border-bottom pb-3">
+          <h5 className="fw-bold text-main m-0 d-flex align-items-center gap-2">
+            <i className="bi bi-heart-pulse text-danger"></i> Net Promoter Score (NPS) Analysis
+          </h5>
+          <span className="text-muted small fw-semibold bg-light px-3 py-1 rounded-pill">
+            Formula: NPS = % Promoters − % Detractors
+          </span>
+        </div>
         <div className="row g-4 align-items-center">
-          <div className="col-md-3 text-center border-end">
-            <span className="text-muted small fw-bold text-uppercase d-block mb-1">Overall NPS Score</span>
-            <h1 className={`fw-black display-4 mb-0 ${
-              chartData.npsScore > 50 ? 'text-success' :
-              chartData.npsScore >= 0 ? 'text-primary' :
-              chartData.npsScore === 'N/A' ? 'text-muted' : 'text-danger'
-            }`} style={{ fontSize: '3.5rem', fontWeight: 900 }}>
-              {chartData.npsScore !== 'N/A' ? (chartData.npsScore > 0 ? `+${chartData.npsScore}` : chartData.npsScore) : 'N/A'}
-            </h1>
-            <p className="small text-muted mt-2 mb-0">NPS = % Promoters − % Detractors</p>
-          </div>
-          
-          <div className="col-md-9">
+          <div className="col-12">
             <div className="row text-center mb-3">
               <div className="col-4">
                 <span className="text-warning fw-bold fs-4" style={{ color: '#eab308' }}>{chartData.promotersPct}%</span>
