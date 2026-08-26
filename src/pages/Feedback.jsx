@@ -404,99 +404,108 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                   <div className="mb-4 border-top pt-4">
                     <label className="form-label fw-bold text-primary mb-3">5. How likely are you to recommend us to your friends and family?</label>
                     
-                    {/* Labels "Not at all likely" & "Extremely likely" */}
-                    <div className="d-flex justify-content-between text-muted small mb-2 fw-semibold px-1">
-                      <span>Not at all likely</span>
-                      <span>Extremely likely</span>
-                    </div>
-
                     {/* Numbers 0 to 10 Container grouped dynamically */}
-                    <div className="d-flex justify-content-between gap-2 mb-4 w-100 align-items-center flex-wrap flex-md-nowrap" style={{ paddingBottom: '8px' }}>
+                    <div className="d-flex justify-content-between gap-3 mb-4 w-100 align-items-end flex-wrap flex-md-nowrap" style={{ paddingBottom: '8px' }}>
                       {/* Detractors Group (0-6) */}
-                      <div className="d-flex flex-fill justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-danger" style={{ minWidth: '220px' }}>
-                        {[0, 1, 2, 3, 4, 5, 6].map((num) => {
-                          const isSelected = formData.recommendScore === num;
-                          return (
-                            <button
-                              key={num}
-                              type="button"
-                              className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
-                              style={{ 
-                                width: '32px', 
-                                height: '32px',
-                                minWidth: '28px',
-                                minHeight: '28px',
-                                fontSize: '0.9rem',
-                                fontWeight: 'bold',
-                                backgroundColor: isSelected ? '#dc2626' : '#ffffff',
-                                color: isSelected ? '#ffffff' : '#4b5563',
-                                border: `2px solid ${isSelected ? '#dc2626' : '#e5e7eb'}`,
-                                transition: 'all 0.15s'
-                              }}
-                              onClick={() => setFormData({ ...formData, recommendScore: num })}
-                            >
-                              {num}
-                            </button>
-                          );
-                        })}
+                      <div className="d-flex flex-column flex-fill" style={{ minWidth: '220px' }}>
+                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                          Not at all likely
+                        </span>
+                        <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-danger">
+                          {[0, 1, 2, 3, 4, 5, 6].map((num) => {
+                            const isSelected = formData.recommendScore === num;
+                            return (
+                              <button
+                                key={num}
+                                type="button"
+                                className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
+                                style={{ 
+                                  width: '32px', 
+                                  height: '32px',
+                                  minWidth: '28px',
+                                  minHeight: '28px',
+                                  fontSize: '0.9rem',
+                                  fontWeight: 'bold',
+                                  backgroundColor: isSelected ? '#dc2626' : '#ffffff',
+                                  color: isSelected ? '#ffffff' : '#4b5563',
+                                  border: `2px solid ${isSelected ? '#dc2626' : '#e5e7eb'}`,
+                                  transition: 'all 0.15s'
+                                }}
+                                onClick={() => setFormData({ ...formData, recommendScore: num })}
+                              >
+                                {num}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       {/* Passives Group (7-8) */}
-                      <div className="d-flex flex-fill justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-secondary" style={{ maxWidth: '120px', minWidth: '80px' }}>
-                        {[7, 8].map((num) => {
-                          const isSelected = formData.recommendScore === num;
-                          return (
-                            <button
-                              key={num}
-                              type="button"
-                              className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
-                              style={{ 
-                                width: '32px', 
-                                height: '32px',
-                                minWidth: '28px',
-                                minHeight: '28px',
-                                fontSize: '0.9rem',
-                                fontWeight: 'bold',
-                                backgroundColor: isSelected ? '#6b7280' : '#ffffff',
-                                color: isSelected ? '#ffffff' : '#4b5563',
-                                border: `2px solid ${isSelected ? '#6b7280' : '#e5e7eb'}`,
-                                transition: 'all 0.15s'
-                              }}
-                              onClick={() => setFormData({ ...formData, recommendScore: num })}
-                            >
-                              {num}
-                            </button>
-                          );
-                        })}
+                      <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '80px' }}>
+                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase invisible" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                          Neutral
+                        </span>
+                        <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-secondary">
+                          {[7, 8].map((num) => {
+                            const isSelected = formData.recommendScore === num;
+                            return (
+                              <button
+                                key={num}
+                                type="button"
+                                className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
+                                style={{ 
+                                  width: '32px', 
+                                  height: '32px',
+                                  minWidth: '28px',
+                                  minHeight: '28px',
+                                  fontSize: '0.9rem',
+                                  fontWeight: 'bold',
+                                  backgroundColor: isSelected ? '#6b7280' : '#ffffff',
+                                  color: isSelected ? '#ffffff' : '#4b5563',
+                                  border: `2px solid ${isSelected ? '#6b7280' : '#e5e7eb'}`,
+                                  transition: 'all 0.15s'
+                                }}
+                                onClick={() => setFormData({ ...formData, recommendScore: num })}
+                              >
+                                {num}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
 
                       {/* Promoters Group (9-10) */}
-                      <div className="d-flex flex-fill justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-warning" style={{ maxWidth: '120px', minWidth: '80px' }}>
-                        {[9, 10].map((num) => {
-                          const isSelected = formData.recommendScore === num;
-                          return (
-                            <button
-                              key={num}
-                              type="button"
-                              className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
-                              style={{ 
-                                width: '32px', 
-                                height: '32px',
-                                minWidth: '28px',
-                                minHeight: '28px',
-                                fontSize: '0.9rem',
-                                fontWeight: 'bold',
-                                backgroundColor: isSelected ? '#eab308' : '#ffffff',
-                                color: isSelected ? '#ffffff' : '#4b5563',
-                                border: `2px solid ${isSelected ? '#eab308' : '#e5e7eb'}`,
-                                transition: 'all 0.15s'
-                              }}
-                              onClick={() => setFormData({ ...formData, recommendScore: num })}
-                            >
-                              {num}
-                            </button>
-                          );
-                        })}
+                      <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '80px' }}>
+                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase" style={{ fontSize: '0.75rem', color: '#b45309', letterSpacing: '0.5px' }}>
+                          Extremely likely
+                        </span>
+                        <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-warning">
+                          {[9, 10].map((num) => {
+                            const isSelected = formData.recommendScore === num;
+                            return (
+                              <button
+                                key={num}
+                                type="button"
+                                className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
+                                style={{ 
+                                  width: '32px', 
+                                  height: '32px',
+                                  minWidth: '28px',
+                                  minHeight: '28px',
+                                  fontSize: '0.9rem',
+                                  fontWeight: 'bold',
+                                  backgroundColor: isSelected ? '#eab308' : '#ffffff',
+                                  color: isSelected ? '#ffffff' : '#4b5563',
+                                  border: `2px solid ${isSelected ? '#eab308' : '#e5e7eb'}`,
+                                  transition: 'all 0.15s'
+                                }}
+                                onClick={() => setFormData({ ...formData, recommendScore: num })}
+                              >
+                                {num}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 
