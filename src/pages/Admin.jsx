@@ -4,6 +4,14 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
 
+const EMOJI_SCALE = [
+  { value: 1, text: 'Terrible', emoji: '😠' },
+  { value: 2, text: 'Poor', emoji: '😕' },
+  { value: 3, text: 'Average', emoji: '😐' },
+  { value: 4, text: 'Good', emoji: '😊' },
+  { value: 5, text: 'Excellent', emoji: '🤩' }
+];
+
 export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfig, deleteFeedback, seedDemoData }) {
   const [sortMode, setSortMode] = useState('newest');
   const [fromDate, setFromDate] = useState('');
@@ -873,7 +881,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                   autoFocus
                 />
               </div>
-              <div className="mb-4">
+              <div className="mb-3">
                 <label className="form-label small fw-bold text-muted text-uppercase mb-1">Question Type Category</label>
                 <select 
                   className="form-select" 
@@ -886,6 +894,55 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                   <option value="emoji-3">3 Emojis Scale (Good, Neutral, Bad)</option>
                 </select>
               </div>
+              
+              {/* Live Preview */}
+              <div className="mb-4 p-3 bg-light rounded-3 border text-start">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="small fw-bold text-muted text-uppercase" style={{ fontSize: '0.7rem' }}>Live Preview</span>
+                  <span className="badge bg-secondary-subtle text-secondary rounded-pill" style={{ fontSize: '0.65rem' }}>Patient Form View</span>
+                </div>
+                <div className="bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label text-muted small fw-bold mb-2">
+                    {newQuestion.text || "Sample Question Text?"} <span className="text-danger">*</span>
+                  </label>
+                  {newQuestion.type === 'select' ? (
+                    <div className="d-flex gap-2">
+                      {["Yes", "No", "May be"].map(opt => (
+                        <button key={opt} type="button" className="btn btn-sm btn-outline-primary bg-white flex-fill py-2 rounded-pill fw-medium" style={{ pointerEvents: 'none' }} disabled>
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  ) : newQuestion.type === 'emoji-3' ? (
+                    <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded border" style={{ height: '42px' }}>
+                      {[
+                        { text: "Good", emoji: "😊" },
+                        { text: "Neutral", emoji: "😐" },
+                        { text: "Bad", emoji: "😞" }
+                      ].map(opt => (
+                        <div key={opt.text} className="flex-fill text-center d-flex align-items-center justify-content-center gap-1" style={{ opacity: 0.5 }}>
+                          <span style={{ fontSize: '1.3rem' }}>{opt.emoji}</span>
+                          <span className="small fw-bold text-primary" style={{ fontSize: '0.75rem' }}>{opt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded border">
+                      {EMOJI_SCALE.map((item) => (
+                        <div key={item.value} className="emoji-option" style={{ opacity: 0.35 }}>
+                          <div style={{ fontSize: '1.4rem' }}>{item.emoji}</div>
+                        </div>
+                      ))}
+                      {newQuestion.type === 'emoji-5-na' && (
+                        <div className="d-flex align-items-center justify-content-center fw-bold rounded-circle border" style={{ width: '32px', height: '32px', fontSize: '0.75rem', opacity: 0.35, color: '#6c757d', borderColor: '#cbd5e1' }}>
+                          N/A
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="d-flex justify-content-end gap-2">
                 <button className="btn btn-light rounded-pill px-4" onClick={() => setModalState(null)}>Cancel</button>
                 <button className="btn btn-primary rounded-pill px-4" onClick={saveQuestion}>Add Question</button>
@@ -912,7 +969,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                   autoFocus
                 />
               </div>
-              <div className="mb-4">
+              <div className="mb-3">
                 <label className="form-label small fw-bold text-muted text-uppercase mb-1">Question Type Category</label>
                 <select 
                   className="form-select" 
@@ -925,6 +982,55 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                   <option value="emoji-3">3 Emojis Scale (Good, Neutral, Bad)</option>
                 </select>
               </div>
+
+              {/* Live Preview */}
+              <div className="mb-4 p-3 bg-light rounded-3 border text-start">
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="small fw-bold text-muted text-uppercase" style={{ fontSize: '0.7rem' }}>Live Preview</span>
+                  <span className="badge bg-secondary-subtle text-secondary rounded-pill" style={{ fontSize: '0.65rem' }}>Patient Form View</span>
+                </div>
+                <div className="bg-white p-3 rounded border shadow-sm">
+                  <label className="form-label text-muted small fw-bold mb-2">
+                    {editingQuestion.text || "Sample Question Text?"} <span className="text-danger">*</span>
+                  </label>
+                  {editingQuestion.type === 'select' ? (
+                    <div className="d-flex gap-2">
+                      {["Yes", "No", "May be"].map(opt => (
+                        <button key={opt} type="button" className="btn btn-sm btn-outline-primary bg-white flex-fill py-2 rounded-pill fw-medium" style={{ pointerEvents: 'none' }} disabled>
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  ) : editingQuestion.type === 'emoji-3' ? (
+                    <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded border" style={{ height: '42px' }}>
+                      {[
+                        { text: "Good", emoji: "😊" },
+                        { text: "Neutral", emoji: "😐" },
+                        { text: "Bad", emoji: "😞" }
+                      ].map(opt => (
+                        <div key={opt.text} className="flex-fill text-center d-flex align-items-center justify-content-center gap-1" style={{ opacity: 0.5 }}>
+                          <span style={{ fontSize: '1.3rem' }}>{opt.emoji}</span>
+                          <span className="small fw-bold text-primary" style={{ fontSize: '0.75rem' }}>{opt.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded border">
+                      {EMOJI_SCALE.map((item) => (
+                        <div key={item.value} className="emoji-option" style={{ opacity: 0.35 }}>
+                          <div style={{ fontSize: '1.4rem' }}>{item.emoji}</div>
+                        </div>
+                      ))}
+                      {editingQuestion.type === 'emoji-5-na' && (
+                        <div className="d-flex align-items-center justify-content-center fw-bold rounded-circle border" style={{ width: '32px', height: '32px', fontSize: '0.75rem', opacity: 0.35, color: '#6c757d', borderColor: '#cbd5e1' }}>
+                          N/A
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="d-flex justify-content-end gap-2">
                 <button className="btn btn-light rounded-pill px-4" onClick={() => setModalState(null)}>Cancel</button>
                 <button className="btn btn-primary rounded-pill px-4" onClick={updateSavedQuestion}>Save Changes</button>
