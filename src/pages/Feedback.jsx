@@ -410,37 +410,94 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       <span>Extremely likely</span>
                     </div>
 
-                    {/* Numbers 0 to 10 Container */}
-                    <div className="d-flex justify-content-between gap-1 gap-md-2 mb-4 w-100 align-items-center flex-nowrap" style={{ overflowX: 'auto', paddingBottom: '8px' }}>
-                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
-                        const isSelected = formData.recommendScore === num;
-                        let groupColor = '#dc2626'; // Detractor (red)
-                        if (num >= 7 && num <= 8) groupColor = '#6b7280'; // Passive (grey)
-                        if (num >= 9) groupColor = '#eab308'; // Promoter (yellow)
+                    {/* Numbers 0 to 10 Container grouped dynamically */}
+                    <div className="d-flex justify-content-between gap-2 mb-4 w-100 align-items-center flex-wrap flex-md-nowrap" style={{ paddingBottom: '8px' }}>
+                      {/* Detractors Group (0-6) */}
+                      <div className="d-flex flex-fill justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-danger" style={{ minWidth: '220px' }}>
+                        {[0, 1, 2, 3, 4, 5, 6].map((num) => {
+                          const isSelected = formData.recommendScore === num;
+                          return (
+                            <button
+                              key={num}
+                              type="button"
+                              className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
+                              style={{ 
+                                width: '32px', 
+                                height: '32px',
+                                minWidth: '28px',
+                                minHeight: '28px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                backgroundColor: isSelected ? '#dc2626' : '#ffffff',
+                                color: isSelected ? '#ffffff' : '#4b5563',
+                                border: `2px solid ${isSelected ? '#dc2626' : '#e5e7eb'}`,
+                                transition: 'all 0.15s'
+                              }}
+                              onClick={() => setFormData({ ...formData, recommendScore: num })}
+                            >
+                              {num}
+                            </button>
+                          );
+                        })}
+                      </div>
 
-                        return (
-                          <button
-                            key={num}
-                            type="button"
-                            className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
-                            style={{ 
-                              width: '38px', 
-                              height: '38px',
-                              minWidth: '32px',
-                              minHeight: '32px',
-                              fontSize: '1rem',
-                              fontWeight: 'bold',
-                              backgroundColor: isSelected ? groupColor : '#ffffff',
-                              color: isSelected ? '#ffffff' : '#4b5563',
-                              border: `2px solid ${isSelected ? groupColor : '#e5e7eb'}`,
-                              transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
-                            }}
-                            onClick={() => setFormData({ ...formData, recommendScore: num })}
-                          >
-                            {num}
-                          </button>
-                        );
-                      })}
+                      {/* Passives Group (7-8) */}
+                      <div className="d-flex flex-fill justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-secondary" style={{ maxWidth: '120px', minWidth: '80px' }}>
+                        {[7, 8].map((num) => {
+                          const isSelected = formData.recommendScore === num;
+                          return (
+                            <button
+                              key={num}
+                              type="button"
+                              className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
+                              style={{ 
+                                width: '32px', 
+                                height: '32px',
+                                minWidth: '28px',
+                                minHeight: '28px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                backgroundColor: isSelected ? '#6b7280' : '#ffffff',
+                                color: isSelected ? '#ffffff' : '#4b5563',
+                                border: `2px solid ${isSelected ? '#6b7280' : '#e5e7eb'}`,
+                                transition: 'all 0.15s'
+                              }}
+                              onClick={() => setFormData({ ...formData, recommendScore: num })}
+                            >
+                              {num}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Promoters Group (9-10) */}
+                      <div className="d-flex flex-fill justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-warning" style={{ maxWidth: '120px', minWidth: '80px' }}>
+                        {[9, 10].map((num) => {
+                          const isSelected = formData.recommendScore === num;
+                          return (
+                            <button
+                              key={num}
+                              type="button"
+                              className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
+                              style={{ 
+                                width: '32px', 
+                                height: '32px',
+                                minWidth: '28px',
+                                minHeight: '28px',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                backgroundColor: isSelected ? '#eab308' : '#ffffff',
+                                color: isSelected ? '#ffffff' : '#4b5563',
+                                border: `2px solid ${isSelected ? '#eab308' : '#e5e7eb'}`,
+                                transition: 'all 0.15s'
+                              }}
+                              onClick={() => setFormData({ ...formData, recommendScore: num })}
+                            >
+                              {num}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Group Categories Visual Design */}

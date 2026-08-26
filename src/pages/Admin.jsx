@@ -73,6 +73,18 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
 
     const hasData = dateFilteredFeedbacks.length > 0;
 
+    // NPS Calculations
+    const npsFeedbacks = dateFilteredFeedbacks.filter(f => f.recommendScore !== undefined && f.recommendScore !== null);
+    const npsTotal = npsFeedbacks.length;
+    const promotersCount = npsFeedbacks.filter(f => f.recommendScore >= 9).length;
+    const passivesCount = npsFeedbacks.filter(f => f.recommendScore === 7 || f.recommendScore === 8).length;
+    const detractorsCount = npsFeedbacks.filter(f => f.recommendScore <= 6).length;
+
+    const promotersPct = npsTotal ? Math.round((promotersCount / npsTotal) * 100) : 0;
+    const passivesPct = npsTotal ? Math.round((passivesCount / npsTotal) * 100) : 0;
+    const detractorsPct = npsTotal ? Math.round((detractorsCount / npsTotal) * 100) : 0;
+    const npsScore = npsTotal ? (promotersPct - detractorsPct) : 'N/A';
+
     return {
       lineData: {
         labels: trendLabels,
@@ -102,6 +114,10 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       posCount,
       neuCount,
       negCount,
+      promotersPct,
+      passivesPct,
+      detractorsPct,
+      npsScore,
       avgRating: dateFilteredFeedbacks.length 
         ? (dateFilteredFeedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) / dateFilteredFeedbacks.length).toFixed(1) 
         : '0.0'
@@ -251,6 +267,81 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
             <h5 className="mb-4 fw-bold text-main">Sentiment Breakdown</h5>
             <div className="chart-container">
               <Doughnut data={chartData.pieData} options={{ responsive: true, maintainAspectRatio: false }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* NPS Overview Widget */}
+      <div className="glass card p-4 mb-5 border-0">
+        <h5 className="mb-4 fw-bold text-main d-flex align-items-center gap-2">
+          <i className="bi bi-heart-pulse text-danger"></i> Net Promoter Score (NPS) Analysis
+        </h5>
+        <div className="row g-4 align-items-center">
+          <div className="col-md-3 text-center border-end">
+            <span className="text-muted small fw-bold text-uppercase d-block mb-1">Overall NPS Score</span>
+            <h1 className={`fw-black display-4 mb-0 ${
+              chartData.npsScore > 50 ? 'text-success' :
+              chartData.npsScore > 0 ? 'text-primary' :
+              chartData.npsScore === 'N/A' ? 'text-muted' : 'text-danger'
+            }`} style={{ fontSize: '3.5rem', fontWeight: 900 }}>
+              {chartData.npsScore !== 'N/A' ? (chartData.npsScore > 0 ? `+${chartData.npsScore}` : chartData.npsScore) : 'N/A'}
+            </h1>
+            <p className="small text-muted mt-2 mb-0">NPS = % Promoters − % Detractors</p>
+          </div>
+          
+          <div className="col-md-9">
+            <div className="row text-center mb-3">
+              <div className="col-4">
+                <span className="text-warning fw-bold fs-4" style={{ color: '#eab308' }}>{chartData.promotersPct}%</span>
+                <span className="d-block text-muted small fw-semibold">😄 Promoters</span>
+              </div>
+              <div className="col-4">
+                <span className="text-secondary fw-bold fs-4">{chartData.passivesPct}%</span>
+                <span className="d-block text-muted small fw-semibold">😐 Passives</span>
+              </div>
+              <div className="col-4">
+                <span className="text-danger fw-bold fs-4" style={{ color: '#dc2626' }}>{chartData.detractorsPct}%</span>
+                <span className="d-block text-muted small fw-semibold">😠 Detractors</span>
+              </div>
+            </div>
+            
+            {/* Colored Segment Progress Bar representing the distribution */}
+            <div className="progress rounded-pill mb-3" style={{ height: '14px' }}>
+              <div 
+                className="progress-bar" 
+                style={{ width: `${chartData.promotersPct}%`, backgroundColor: '#eab308' }} 
+                title={`Promoters: ${chartData.promotersPct}%`}
+              ></div>
+              <div 
+                className="progress-bar" 
+                style={{ width: `${chartData.passivesPct}%`, backgroundColor: '#6b7280' }} 
+                title={`Passives: ${chartData.passivesPct}%`}
+              ></div>
+              <div 
+                className="progress-bar" 
+                style={{ width: `${chartData.detractorsPct}%`, backgroundColor: '#dc2626' }} 
+                title={`Detractors: ${chartData.detractorsPct}%`}
+              ></div>
+            </div>
+
+            {/* Simple Definitions */}
+            <div className="row g-2" style={{ fontSize: '0.85rem' }}>
+              <div className="col-md-4">
+                <div className="p-2 border-start border-warning border-3 bg-light rounded-end h-100">
+                  <strong>Promoters (9-10):</strong> Highly satisfied patients who had a positive experience and are likely to recommend.
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="p-2 border-start border-secondary border-3 bg-light rounded-end h-100">
+                  <strong>Passives (7-8):</strong> Satisfied but not highly enthusiastic; vulnerable to other providers.
+                </div>
+              </div>
+              <div className="col-md-4">
+                <div className="p-2 border-start border-danger border-3 bg-light rounded-end h-100">
+                  <strong>Detractors (0-6):</strong> Dissatisfied patients who had a poor experience and are unlikely to recommend.
+                </div>
+              </div>
             </div>
           </div>
         </div>
