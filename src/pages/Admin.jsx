@@ -282,7 +282,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
             <span className="text-muted small fw-bold text-uppercase d-block mb-1">Overall NPS Score</span>
             <h1 className={`fw-black display-4 mb-0 ${
               chartData.npsScore > 50 ? 'text-success' :
-              chartData.npsScore > 0 ? 'text-primary' :
+              chartData.npsScore >= 0 ? 'text-primary' :
               chartData.npsScore === 'N/A' ? 'text-muted' : 'text-danger'
             }`} style={{ fontSize: '3.5rem', fontWeight: 900 }}>
               {chartData.npsScore !== 'N/A' ? (chartData.npsScore > 0 ? `+${chartData.npsScore}` : chartData.npsScore) : 'N/A'}
