@@ -12,34 +12,38 @@ const DEFAULT_DEPARTMENTS = {
   "OPD": { 
     icon: "bi-person-walking", 
     desc: "Outpatient Department (Consultations, regular eye checkups)", 
-    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Call Center Experience", "Premises Cleanliness"] 
+    questions: [
+      { text: "Registration Experience", type: "emoji-5" },
+      { text: "Waiting Time", type: "emoji-5" },
+      { text: "Doctor's Behavior", type: "emoji-5" },
+      { text: "Support Staff Behavior", type: "emoji-5" },
+      { text: "Call Center Experience", type: "emoji-5-na" },
+      { text: "Premises Cleanliness", type: "emoji-5" }
+    ] 
   },
   "IPD": { 
     icon: "bi-hospital", 
     desc: "Inpatient Department (Admissions, surgeries, overnight stays)", 
-    questions: ["Admission Process", "Nursing Care", "Doctor's Care", "Room Cleanliness", "Food & Diet", "Discharge Process"] 
+    questions: [
+      { text: "Admission Process", type: "emoji-5" },
+      { text: "Nursing Care", type: "emoji-5" },
+      { text: "Doctor's Care", type: "emoji-5" },
+      { text: "Room Cleanliness", type: "emoji-5" },
+      { text: "Food & Diet", type: "emoji-5" },
+      { text: "Discharge Process", type: "emoji-5" }
+    ] 
   },
   "Optical Department": {
     icon: "bi-glasses",
     desc: "Optical Department (Spectacles, frames, lenses, and eye-wear fitting)",
-    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Premises Cleanliness"],
-    customQuestions: [
-      {
-        id: "purchase_glasses",
-        text: "Did you purchase the glasses?",
-        type: "select",
-        options: ["Yes", "No", "May be"]
-      },
-      {
-        id: "frame_collection",
-        text: "How did you like the frame collection?",
-        type: "emoji-3",
-        options: [
-          { text: "Good", emoji: "😊" },
-          { text: "Neutral", emoji: "😐" },
-          { text: "Bad", emoji: "😞" }
-        ]
-      }
+    questions: [
+      { text: "Registration Experience", type: "emoji-5" },
+      { text: "Waiting Time", type: "emoji-5" },
+      { text: "Doctor's Behavior", type: "emoji-5" },
+      { text: "Support Staff Behavior", type: "emoji-5" },
+      { text: "Premises Cleanliness", type: "emoji-5" },
+      { text: "Did you purchase the glasses?", type: "select", options: ["Yes", "No", "May be"] },
+      { text: "How did you like the frame collection?", type: "emoji-3" }
     ]
   }
 };
@@ -78,10 +82,10 @@ const SAMPLE_DEMO_FEEDBACKS = [
       "Nursing Care": "Excellent",
       "Doctor's Care": "Excellent",
       "Room Cleanliness": "Good",
-      "Food & Diet": "Average",
+      "Food & Diet": "Good",
       "Discharge Process": "Good"
     },
-    feedbackText: "Post-surgery care in the ward was very attentive. Nursing staff took great care of me.",
+    feedbackText: "Excellent care during ward stay. Discharge process was simple.",
     createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
   },
   {
@@ -146,10 +150,13 @@ export default function App() {
     try {
       const saved = localStorage.getItem('hospitalConfig');
       let config = saved ? JSON.parse(saved) : DEFAULT_DEPARTMENTS;
-      // Migration: Ensure Optical Department has customQuestions if missing
-      if (config["Optical Department"] && !config["Optical Department"].customQuestions) {
-        config["Optical Department"].customQuestions = DEFAULT_DEPARTMENTS["Optical Department"].customQuestions;
-        localStorage.setItem('hospitalConfig', JSON.stringify(config));
+      // Migration: Ensure Optical Department questions are object-formatted
+      if (config["Optical Department"]) {
+        const hasCustom = config["Optical Department"].questions.some(q => typeof q === 'object' && q.type === 'select');
+        if (!hasCustom) {
+          config["Optical Department"] = DEFAULT_DEPARTMENTS["Optical Department"];
+          localStorage.setItem('hospitalConfig', JSON.stringify(config));
+        }
       }
       return config;
     } catch {

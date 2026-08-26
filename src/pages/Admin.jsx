@@ -17,7 +17,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   const [modalState, setModalState] = useState(null); // 'addDept' | 'addQuestion' | 'confirm' | 'viewDetail' | null
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [newDept, setNewDept] = useState({ name: '', desc: '' });
-  const [newQuestion, setNewQuestion] = useState({ dept: '', text: '' });
+  const [newQuestion, setNewQuestion] = useState({ dept: '', text: '', type: 'emoji-5' });
   const [confirmAction, setConfirmAction] = useState({ msg: '', onConfirm: null });
 
   // Filtered feedbacks (applies Date Range, Dept, Sentiment)
@@ -158,10 +158,17 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     const text = newQuestion.text.trim();
     if (text && newQuestion.dept && hospitalConfig[newQuestion.dept]) {
       const updated = { ...hospitalConfig };
-      updated[newQuestion.dept].questions = [...updated[newQuestion.dept].questions, text];
+      const qObj = {
+        text,
+        type: newQuestion.type || 'emoji-5'
+      };
+      if (newQuestion.type === 'select') {
+        qObj.options = ["Yes", "No", "May be"];
+      }
+      updated[newQuestion.dept].questions = [...updated[newQuestion.dept].questions, qObj];
       updateConfig(updated);
       setModalState(null);
-      setNewQuestion({ dept: '', text: '' });
+      setNewQuestion({ dept: '', text: '', type: 'emoji-5' });
     }
   };
 
@@ -187,9 +194,11 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       const mobile = (f.mobile || '');
       const comments = (f.feedbackText || '').replace(/"/g, '""').replace(/\n/g, ' ');
       const nps = f.recommendScore !== undefined && f.recommendScore !== null ? f.recommendScore : '';
-      const customAns = f.customAnswers 
-        ? Object.entries(f.customAnswers).map(([k, v]) => `${k}: ${v}`).join(' | ').replace(/"/g, '""')
-        : '';
+      const allAnswers = { ...(f.customAnswers || {}), ...(f.questionAnswers || {}) };
+      const customAns = Object.entries(allAnswers)
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' | ')
+        .replace(/"/g, '""');
       return `"${f.id}","${dateStr}","${f.feedbackType}","${name}","${mobile}","${f.age || ''}","${f.gender || ''}","${f.rating || ''}","${f.category || ''}","${comments}","${nps}","${customAns}"`;
     }).join('\n');
 
@@ -382,28 +391,49 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                   </button>
                 </div>
 
-                <div className="mb-3">
-                  {data.questions.map((q, idx) => (
-                    <div key={`${dept}-q-${idx}`} className="d-flex justify-content-between align-items-center bg-white border rounded p-2 mb-2 shadow-sm">
-                      <span className="small fw-medium text-main">{q}</span>
-                      <button 
-                        className="btn btn-sm text-danger border-0 py-0" 
-                        title="Remove question"
-                        onClick={() => deleteConfigItem(`Remove question "${q}"?`, () => {
-                          const updated = { ...hospitalConfig };
-                          updated[dept].questions.splice(idx, 1);
-                          updateConfig(updated);
-                        })}
-                      >
-                        <i className="bi bi-x-circle-fill"></i>
-                      </button>
-                    </div>
-                  ))}
+                 <div className="mb-3">
+                  {data.questions.map((q, idx) => {
+                    const qText = typeof q === 'object' ? q.text : q;
+                    const qType = typeof q === 'object' ? q.type : 'emoji-5';
+                    
+                    let badgeColor = 'bg-primary-subtle text-primary';
+                    let badgeText = '5 Emojis';
+                    if (qType === 'emoji-5-na') {
+                      badgeColor = 'bg-info-subtle text-info';
+                      badgeText = '5 Emojis + N/A';
+                    } else if (qType === 'select') {
+                      badgeColor = 'bg-success-subtle text-success';
+                      badgeText = 'Yes/No/Maybe';
+                    } else if (qType === 'emoji-3') {
+                      badgeColor = 'bg-warning-subtle text-warning';
+                      badgeText = '3 Emojis';
+                    }
+
+                    return (
+                      <div key={`${dept}-q-${idx}`} className="d-flex justify-content-between align-items-center bg-white border rounded p-2 mb-2 shadow-sm">
+                        <div className="d-flex flex-column">
+                          <span className="small fw-medium text-main" style={{ fontSize: '0.85rem' }}>{qText}</span>
+                          <span className={`badge ${badgeColor} rounded-pill mt-1`} style={{ fontSize: '0.65rem', alignSelf: 'start' }}>{badgeText}</span>
+                        </div>
+                        <button 
+                          className="btn btn-sm text-danger border-0 py-0" 
+                          title="Remove question"
+                          onClick={() => deleteConfigItem(`Remove question "${qText}"?`, () => {
+                            const updated = { ...hospitalConfig };
+                            updated[dept].questions.splice(idx, 1);
+                            updateConfig(updated);
+                          })}
+                        >
+                          <i className="bi bi-x-circle-fill"></i>
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <button 
                   className="btn btn-sm btn-outline-primary w-100 mt-auto rounded-pill fw-medium bg-white" 
-                  onClick={() => { setNewQuestion({ dept, text: '' }); setModalState('addQuestion'); }}
+                  onClick={() => { setNewQuestion({ dept, text: '', type: 'emoji-5' }); setModalState('addQuestion'); }}
                 >
                   <i className="bi bi-plus-circle me-1"></i> Add Question
                 </button>
@@ -796,14 +826,30 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content shadow-lg p-4">
               <h5 className="fw-bold mb-3">Add Question ({newQuestion.dept})</h5>
-              <input 
-                type="text" 
-                value={newQuestion.text} 
-                onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })} 
-                className="form-control mb-4" 
-                placeholder="e.g. Pharmacy waiting experience..." 
-                autoFocus
-              />
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-muted text-uppercase mb-1">Question Text</label>
+                <input 
+                  type="text" 
+                  value={newQuestion.text} 
+                  onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })} 
+                  className="form-control" 
+                  placeholder="e.g. Pharmacy waiting experience..." 
+                  autoFocus
+                />
+              </div>
+              <div className="mb-4">
+                <label className="form-label small fw-bold text-muted text-uppercase mb-1">Question Type Category</label>
+                <select 
+                  className="form-select" 
+                  value={newQuestion.type} 
+                  onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}
+                >
+                  <option value="emoji-5">5 Emojis Scale (Terrible to Excellent)</option>
+                  <option value="emoji-5-na">5 Emojis Scale + N/A Option (e.g., Call Center)</option>
+                  <option value="select">Yes / No / May be (Pills)</option>
+                  <option value="emoji-3">3 Emojis Scale (Good, Neutral, Bad)</option>
+                </select>
+              </div>
               <div className="d-flex justify-content-end gap-2">
                 <button className="btn btn-light rounded-pill px-4" onClick={() => setModalState(null)}>Cancel</button>
                 <button className="btn btn-primary rounded-pill px-4" onClick={saveQuestion}>Add Question</button>

@@ -16,31 +16,24 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const [rating, setRating] = useState(5);
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [questionAnswers, setQuestionAnswers] = useState({});
-  const [customAnswers, setCustomAnswers] = useState({});
 
   const handleDeptSelect = (type) => {
     setCurrentType(type);
     // Unbiased survey design: start with empty answers so patient actively chooses
     const initialAnswers = {};
-    hospitalConfig[type]?.questions.forEach(q => initialAnswers[q] = '');
-    setQuestionAnswers(initialAnswers);
-
-    // Initialize custom answers
-    const initialCustom = {};
-    if (hospitalConfig[type]?.customQuestions) {
-      hospitalConfig[type].customQuestions.forEach(q => {
-        initialCustom[q.id] = '';
+    if (hospitalConfig[type]?.questions) {
+      hospitalConfig[type].questions.forEach(q => {
+        const qText = typeof q === 'object' ? q.text : q;
+        initialAnswers[qText] = '';
       });
     }
-    setCustomAnswers(initialCustom);
-
+    setQuestionAnswers(initialAnswers);
     setStep('form');
   };
 
   const handleResetAndHome = () => {
     setFormData(INITIAL_FORM_DATA);
     setQuestionAnswers({});
-    setCustomAnswers({});
     setRating(5);
     setStep('select-dept');
     goHome();
@@ -49,7 +42,6 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const handleAnotherFeedback = () => {
     setFormData(INITIAL_FORM_DATA);
     setQuestionAnswers({});
-    setCustomAnswers({});
     setRating(5);
     setStep('select-dept');
   };
@@ -57,13 +49,13 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validate custom department questions if present
-    if (hospitalConfig[currentType]?.customQuestions) {
-      for (const q of hospitalConfig[currentType].customQuestions) {
-        if (!customAnswers[q.id]) {
-          alert(`Please answer the question: "${q.text}"`);
-          return;
-        }
+    // Validate all department questions have been answered
+    const questions = hospitalConfig[currentType]?.questions || [];
+    for (const q of questions) {
+      const qText = typeof q === 'object' ? q.text : q;
+      if (!questionAnswers[qText]) {
+        alert(`Please answer the question: "${qText}"`);
+        return;
       }
     }
 
@@ -85,7 +77,6 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
       rating,
       category: computedCategory,
       questionAnswers,
-      customAnswers,
       feedbackText: formData.feedbackText.trim(),
       recommendScore: formData.recommendScore,
       createdAt: new Date().toISOString()
@@ -225,69 +216,6 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                     </div>
                   </div>
 
-                  {/* Department Custom Questions (e.g. Optical Department purchase/collection questions) */}
-                  {hospitalConfig[currentType]?.customQuestions && hospitalConfig[currentType].customQuestions.length > 0 && (
-                    <div className="mb-4 bg-light p-3 p-md-4 rounded-3 border mt-4">
-                      <h6 className="mb-3 fw-bold text-main border-bottom pb-2">Department Specific Questions</h6>
-                      <div className="row g-3">
-                        {hospitalConfig[currentType].customQuestions.map((q) => (
-                          <div className="col-md-6" key={q.id}>
-                            <label className="form-label text-muted small fw-bold mb-2">{q.text} <span className="text-danger">*</span></label>
-                            {q.type === 'select' && (
-                              <div className="d-flex gap-2">
-                                {q.options.map(opt => {
-                                  const isSelected = customAnswers[q.id] === opt;
-                                  return (
-                                    <button
-                                      key={opt}
-                                      type="button"
-                                      className={`btn btn-sm flex-fill py-2 rounded-pill fw-medium ${
-                                        isSelected ? 'btn-primary' : 'btn-outline-primary bg-white'
-                                      }`}
-                                      onClick={() => setCustomAnswers({ ...customAnswers, [q.id]: opt })}
-                                    >
-                                      {opt}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            {q.type === 'emoji-3' && (
-                              <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border" style={{ height: '42px' }}>
-                                {q.options.map(opt => {
-                                  const isSelected = customAnswers[q.id] === opt.text;
-                                  return (
-                                    <div
-                                      key={opt.text}
-                                      title={opt.text}
-                                      className="emoji-option flex-fill text-center d-flex align-items-center justify-content-center gap-1"
-                                      onClick={() => setCustomAnswers({ ...customAnswers, [q.id]: opt.text })}
-                                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
-                                    >
-                                      <span style={{
-                                        fontSize: '1.3rem',
-                                        opacity: isSelected ? 1 : 0.3,
-                                        transform: isSelected ? 'scale(1.2)' : 'scale(1)',
-                                        transition: 'all 0.2s'
-                                      }}>
-                                        {opt.emoji}
-                                      </span>
-                                      {isSelected && (
-                                        <span className="small fw-bold text-primary" style={{ fontSize: '0.75rem' }}>
-                                          {opt.text}
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Overall Rating Emoji Scale */}
                   <h5 className="fw-bold mt-5 mb-3 text-primary border-bottom pb-2">2. Overall Experience</h5>
                   <p className="text-center text-muted small mb-3">Select the emoji that best describes your overall visit today.</p>
@@ -326,64 +254,125 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                   <div className="mb-4 bg-light p-3 p-md-4 rounded-3 border">
                     <h6 className="mb-3 fw-bold text-main border-bottom pb-2">3. Specific Department Services</h6>
                     <div className="row g-3">
-                      {hospitalConfig[currentType]?.questions.map((q, idx) => (
-                        <div className="col-md-6" key={idx}>
-                          <label className="form-label text-muted small fw-bold mb-2">{q}</label>
-                          <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border">
-                            {EMOJI_SCALE.map((item) => {
-                              const isSelected = questionAnswers[q] === item.text;
-                              return (
-                                <div 
-                                  key={`q-${idx}-${item.value}`} 
-                                  title={item.text}
-                                  className="emoji-option"
-                                  onClick={() => setQuestionAnswers({ ...questionAnswers, [q]: item.text })}
-                                  tabIndex={0}
-                                  role="radio"
-                                  aria-checked={isSelected}
-                                  aria-label={`${q}: ${item.text}`}
-                                  onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQuestionAnswers({ ...questionAnswers, [q]: item.text })}
-                                >
-                                  <div style={{ 
-                                    fontSize: '1.4rem', 
-                                    opacity: isSelected ? 1 : 0.25, 
-                                    transform: isSelected ? 'scale(1.25)' : 'scale(1)', 
-                                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' 
-                                  }}>
-                                    {item.emoji}
+                      {hospitalConfig[currentType]?.questions.map((q, idx) => {
+                        const qText = typeof q === 'object' ? q.text : q;
+                        const qType = typeof q === 'object' ? q.type : 'emoji-5';
+                        const qOptions = typeof q === 'object' ? q.options : null;
+
+                        return (
+                          <div className="col-md-6" key={idx}>
+                            <label className="form-label text-muted small fw-bold mb-2">
+                              {qText} <span className="text-danger">*</span>
+                            </label>
+
+                            {qType === 'select' ? (
+                              <div className="d-flex gap-2">
+                                {(qOptions || ["Yes", "No", "May be"]).map(opt => {
+                                  const isSelected = questionAnswers[qText] === opt;
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      className={`btn btn-sm flex-fill py-2 rounded-pill fw-medium ${
+                                        isSelected ? 'btn-primary' : 'btn-outline-primary bg-white'
+                                      }`}
+                                      onClick={() => setQuestionAnswers({ ...questionAnswers, [qText]: opt })}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : qType === 'emoji-3' ? (
+                              <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border" style={{ height: '42px' }}>
+                                {[
+                                  { text: "Good", emoji: "😊" },
+                                  { text: "Neutral", emoji: "😐" },
+                                  { text: "Bad", emoji: "😞" }
+                                ].map(opt => {
+                                  const isSelected = questionAnswers[qText] === opt.text;
+                                  return (
+                                    <div
+                                      key={opt.text}
+                                      title={opt.text}
+                                      className="emoji-option flex-fill text-center d-flex align-items-center justify-content-center gap-1"
+                                      onClick={() => setQuestionAnswers({ ...questionAnswers, [qText]: opt.text })}
+                                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                                    >
+                                      <span style={{
+                                        fontSize: '1.3rem',
+                                        opacity: isSelected ? 1 : 0.3,
+                                        transform: isSelected ? 'scale(1.2)' : 'scale(1)',
+                                        transition: 'all 0.2s'
+                                      }}>
+                                        {opt.emoji}
+                                      </span>
+                                      {isSelected && (
+                                        <span className="small fw-bold text-primary" style={{ fontSize: '0.75rem' }}>
+                                          {opt.text}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border">
+                                {EMOJI_SCALE.map((item) => {
+                                  const isSelected = questionAnswers[qText] === item.text;
+                                  return (
+                                    <div 
+                                      key={`q-${idx}-${item.value}`} 
+                                      title={item.text}
+                                      className="emoji-option"
+                                      onClick={() => setQuestionAnswers({ ...questionAnswers, [qText]: item.text })}
+                                      tabIndex={0}
+                                      role="radio"
+                                      aria-checked={isSelected}
+                                      aria-label={`${qText}: ${item.text}`}
+                                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQuestionAnswers({ ...questionAnswers, [qText]: item.text })}
+                                    >
+                                      <div style={{ 
+                                        fontSize: '1.4rem', 
+                                        opacity: isSelected ? 1 : 0.25, 
+                                        transform: isSelected ? 'scale(1.25)' : 'scale(1)', 
+                                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' 
+                                      }}>
+                                        {item.emoji}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                {(qType === 'emoji-5-na' || qText.toLowerCase().includes('call center')) && (
+                                  <div 
+                                    title="Not Applicable"
+                                    className="emoji-option d-flex align-items-center justify-content-center fw-bold rounded-circle border"
+                                    style={{ 
+                                      width: '32px', 
+                                      height: '32px', 
+                                      fontSize: '0.75rem',
+                                      cursor: 'pointer',
+                                      opacity: questionAnswers[qText] === 'N/A' ? 1 : 0.25,
+                                      backgroundColor: questionAnswers[qText] === 'N/A' ? '#e9ecef' : 'transparent',
+                                      color: questionAnswers[qText] === 'N/A' ? '#0d6efd' : '#6c757d',
+                                      borderColor: questionAnswers[qText] === 'N/A' ? '#0d6efd' : '#cbd5e1',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onClick={() => setQuestionAnswers({ ...questionAnswers, [qText]: 'N/A' })}
+                                    tabIndex={0}
+                                    role="radio"
+                                    aria-checked={questionAnswers[qText] === 'N/A'}
+                                    aria-label={`${qText}: Not Applicable`}
+                                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQuestionAnswers({ ...questionAnswers, [qText]: 'N/A' })}
+                                  >
+                                    N/A
                                   </div>
-                                </div>
-                              );
-                            })}
-                            {/* If it's a Call Center question, render N/A option */}
-                            {q.toLowerCase().includes('call center') && (
-                              <div 
-                                title="Not Applicable"
-                                className="emoji-option d-flex align-items-center justify-content-center fw-bold rounded-circle border"
-                                style={{ 
-                                  width: '32px', 
-                                  height: '32px', 
-                                  fontSize: '0.75rem',
-                                  cursor: 'pointer',
-                                  opacity: questionAnswers[q] === 'N/A' ? 1 : 0.25,
-                                  backgroundColor: questionAnswers[q] === 'N/A' ? '#e9ecef' : 'transparent',
-                                  color: questionAnswers[q] === 'N/A' ? '#0d6efd' : '#6c757d',
-                                  borderColor: questionAnswers[q] === 'N/A' ? '#0d6efd' : '#cbd5e1',
-                                  transition: 'all 0.2s'
-                                }}
-                                onClick={() => setQuestionAnswers({ ...questionAnswers, [q]: 'N/A' })}
-                                tabIndex={0}
-                                role="radio"
-                                aria-checked={questionAnswers[q] === 'N/A'}
-                                aria-label={`${q}: Not Applicable`}
-                                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setQuestionAnswers({ ...questionAnswers, [q]: 'N/A' })}
-                              >
-                                N/A
+                                )}
                               </div>
                             )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
