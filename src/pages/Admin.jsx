@@ -252,29 +252,41 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
 
       {/* Overview Stat Cards */}
       <div className="row g-4 mb-5">
-        <div className="col-md-3 col-sm-6">
+        <div className="col-lg col-md-4 col-sm-6">
           <div className="glass stat-card card p-4 h-100">
             <h6 className="text-muted fw-semibold mb-2">Total Submissions</h6>
             <h2 className="text-primary fw-bold mb-0">{dateFilteredFeedbacks.length}</h2>
           </div>
         </div>
-        <div className="col-md-3 col-sm-6">
+        <div className="col-lg col-md-4 col-sm-6">
           <div className="glass stat-card card p-4 h-100 border-info">
             <h6 className="text-muted fw-semibold mb-2">Active Departments</h6>
             <h2 className="text-info fw-bold mb-0">{Object.keys(hospitalConfig).length}</h2>
           </div>
         </div>
-        <div className="col-md-3 col-sm-6">
+        <div className="col-lg col-md-4 col-sm-6">
           <div className="glass stat-card card p-4 h-100 border-success">
             <h6 className="text-muted fw-semibold mb-2">Positive Responses</h6>
             <h2 className="text-success fw-bold mb-0">{chartData.posCount}</h2>
           </div>
         </div>
-        <div className="col-md-3 col-sm-6">
+        <div className="col-lg col-md-4 col-sm-6">
           <div className="glass stat-card card p-4 h-100 border-warning">
             <h6 className="text-muted fw-semibold mb-2">Average Rating</h6>
             <h2 className="text-warning fw-bold mb-0">
               {chartData.avgRating} <i className="bi bi-star-fill fs-4 ms-1"></i>
+            </h2>
+          </div>
+        </div>
+        <div className="col-lg col-md-4 col-sm-6">
+          <div className="glass stat-card card p-4 h-100 border-primary">
+            <h6 className="text-muted fw-semibold mb-2">Overall NPS Score</h6>
+            <h2 className={`fw-bold mb-0 ${
+              chartData.npsScore > 50 ? 'text-success' :
+              chartData.npsScore >= 0 ? 'text-primary' :
+              chartData.npsScore === 'N/A' ? 'text-muted' : 'text-danger'
+            }`}>
+              {chartData.npsScore !== 'N/A' ? (chartData.npsScore > 0 ? `+${chartData.npsScore}` : chartData.npsScore) : 'N/A'}
             </h2>
           </div>
         </div>
