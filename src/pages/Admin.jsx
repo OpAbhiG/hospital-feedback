@@ -18,6 +18,7 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [newDept, setNewDept] = useState({ name: '', desc: '' });
   const [newQuestion, setNewQuestion] = useState({ dept: '', text: '', type: 'emoji-5' });
+  const [editingQuestion, setEditingQuestion] = useState({ dept: '', index: null, text: '', type: 'emoji-5' });
   const [confirmAction, setConfirmAction] = useState({ msg: '', onConfirm: null });
 
   // Filtered feedbacks (applies Date Range, Dept, Sentiment)
@@ -169,6 +170,24 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
       updateConfig(updated);
       setModalState(null);
       setNewQuestion({ dept: '', text: '', type: 'emoji-5' });
+    }
+  };
+
+  const updateSavedQuestion = () => {
+    const text = editingQuestion.text.trim();
+    if (text && editingQuestion.dept && editingQuestion.index !== null && hospitalConfig[editingQuestion.dept]) {
+      const updated = { ...hospitalConfig };
+      const qObj = {
+        text,
+        type: editingQuestion.type || 'emoji-5'
+      };
+      if (editingQuestion.type === 'select') {
+        qObj.options = ["Yes", "No", "May be"];
+      }
+      updated[editingQuestion.dept].questions[editingQuestion.index] = qObj;
+      updateConfig(updated);
+      setModalState(null);
+      setEditingQuestion({ dept: '', index: null, text: '', type: 'emoji-5' });
     }
   };
 
@@ -415,17 +434,29 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                           <span className="small fw-medium text-main" style={{ fontSize: '0.85rem' }}>{qText}</span>
                           <span className={`badge ${badgeColor} rounded-pill mt-1`} style={{ fontSize: '0.65rem', alignSelf: 'start' }}>{badgeText}</span>
                         </div>
-                        <button 
-                          className="btn btn-sm text-danger border-0 py-0" 
-                          title="Remove question"
-                          onClick={() => deleteConfigItem(`Remove question "${qText}"?`, () => {
-                            const updated = { ...hospitalConfig };
-                            updated[dept].questions.splice(idx, 1);
-                            updateConfig(updated);
-                          })}
-                        >
-                          <i className="bi bi-x-circle-fill"></i>
-                        </button>
+                        <div className="d-flex align-items-center gap-1">
+                          <button 
+                            className="btn btn-sm text-primary border-0 py-0 px-1" 
+                            title="Edit question"
+                            onClick={() => {
+                              setEditingQuestion({ dept, index: idx, text: qText, type: qType });
+                              setModalState('editQuestion');
+                            }}
+                          >
+                            <i className="bi bi-pencil-fill" style={{ fontSize: '0.85rem' }}></i>
+                          </button>
+                          <button 
+                            className="btn btn-sm text-danger border-0 py-0 px-1" 
+                            title="Remove question"
+                            onClick={() => deleteConfigItem(`Remove question "${qText}"?`, () => {
+                              const updated = { ...hospitalConfig };
+                              updated[dept].questions.splice(idx, 1);
+                              updateConfig(updated);
+                            })}
+                          >
+                            <i className="bi bi-x-circle-fill"></i>
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -853,6 +884,45 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
               <div className="d-flex justify-content-end gap-2">
                 <button className="btn btn-light rounded-pill px-4" onClick={() => setModalState(null)}>Cancel</button>
                 <button className="btn btn-primary rounded-pill px-4" onClick={saveQuestion}>Add Question</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Question Modal */}
+      {modalState === 'editQuestion' && (
+        <div className="modal fade show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow-lg p-4">
+              <h5 className="fw-bold mb-3">Edit Question ({editingQuestion.dept})</h5>
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-muted text-uppercase mb-1">Question Text</label>
+                <input 
+                  type="text" 
+                  value={editingQuestion.text} 
+                  onChange={(e) => setEditingQuestion({ ...editingQuestion, text: e.target.value })} 
+                  className="form-control" 
+                  placeholder="e.g. Pharmacy waiting experience..." 
+                  autoFocus
+                />
+              </div>
+              <div className="mb-4">
+                <label className="form-label small fw-bold text-muted text-uppercase mb-1">Question Type Category</label>
+                <select 
+                  className="form-select" 
+                  value={editingQuestion.type} 
+                  onChange={(e) => setEditingQuestion({ ...editingQuestion, type: e.target.value })}
+                >
+                  <option value="emoji-5">5 Emojis Scale (Terrible to Excellent)</option>
+                  <option value="emoji-5-na">5 Emojis Scale + N/A Option (e.g., Call Center)</option>
+                  <option value="select">Yes / No / May be (Pills)</option>
+                  <option value="emoji-3">3 Emojis Scale (Good, Neutral, Bad)</option>
+                </select>
+              </div>
+              <div className="d-flex justify-content-end gap-2">
+                <button className="btn btn-light rounded-pill px-4" onClick={() => setModalState(null)}>Cancel</button>
+                <button className="btn btn-primary rounded-pill px-4" onClick={updateSavedQuestion}>Save Changes</button>
               </div>
             </div>
           </div>
