@@ -403,22 +403,36 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                   {/* Recommendation Score (NPS) */}
                   <div className="mb-4 border-top pt-4">
                     <label className="form-label fw-bold text-primary mb-3">5. How likely are you to recommend us to your friends and family?</label>
-                    <div className="d-flex justify-content-between gap-1 mb-3 flex-wrap flex-md-nowrap" role="radiogroup" aria-label="Recommendation Score">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+                    
+                    {/* Labels "Not at all likely" & "Extremely likely" */}
+                    <div className="d-flex justify-content-between text-muted small mb-2 fw-semibold px-1">
+                      <span>Not at all likely</span>
+                      <span>Extremely likely</span>
+                    </div>
+
+                    {/* Numbers 0 to 10 Container */}
+                    <div className="d-flex justify-content-between gap-1 gap-md-2 mb-4 w-100 align-items-center flex-nowrap" style={{ overflowX: 'auto', paddingBottom: '8px' }}>
+                      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
                         const isSelected = formData.recommendScore === num;
+                        let groupColor = '#dc2626'; // Detractor (red)
+                        if (num >= 7 && num <= 8) groupColor = '#6b7280'; // Passive (grey)
+                        if (num >= 9) groupColor = '#eab308'; // Promoter (yellow)
+
                         return (
                           <button
                             key={num}
                             type="button"
-                            className="btn btn-outline-primary flex-fill rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm"
+                            className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
                             style={{ 
                               width: '38px', 
-                              height: '38px', 
+                              height: '38px',
+                              minWidth: '32px',
+                              minHeight: '32px',
                               fontSize: '1rem',
                               fontWeight: 'bold',
-                              backgroundColor: isSelected ? 'var(--bs-primary)' : '#ffffff',
-                              color: isSelected ? '#ffffff' : 'var(--bs-primary)',
-                              borderColor: 'var(--bs-primary)',
+                              backgroundColor: isSelected ? groupColor : '#ffffff',
+                              color: isSelected ? '#ffffff' : '#4b5563',
+                              border: `2px solid ${isSelected ? groupColor : '#e5e7eb'}`,
                               transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
                             }}
                             onClick={() => setFormData({ ...formData, recommendScore: num })}
@@ -428,16 +442,58 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                         );
                       })}
                     </div>
-                    {/* NPS Emoji Labels */}
-                    <div className="d-flex justify-content-between text-muted px-1" style={{ fontSize: '0.85rem' }}>
-                      <div className="text-start">
-                        <span style={{ fontSize: '1.2rem' }}>😞</span> Unlikely (1-6)
+
+                    {/* Group Categories Visual Design */}
+                    <div className="row g-2 text-center align-items-center justify-content-center">
+                      {/* Detractors Group */}
+                      <div className="col-4">
+                        <div 
+                          className="p-2 rounded-3 transition-all d-flex flex-column align-items-center"
+                          style={{
+                            borderTop: '3px solid #dc2626',
+                            backgroundColor: formData.recommendScore !== null && formData.recommendScore <= 6 ? 'rgba(220, 38, 38, 0.05)' : 'transparent',
+                            opacity: formData.recommendScore !== null && formData.recommendScore <= 6 ? 1 : 0.4,
+                            transition: 'all 0.3s'
+                          }}
+                        >
+                          <span style={{ fontSize: '1.8rem', lineHeight: 1 }} className="mb-1">😠</span>
+                          <span className="fw-bold small text-danger" style={{ fontSize: '0.8rem' }}>Detractors</span>
+                          <span className="text-muted" style={{ fontSize: '0.7rem' }}>(0-6)</span>
+                        </div>
                       </div>
-                      <div className="text-center">
-                        <span style={{ fontSize: '1.2rem' }}>😐</span> Neutral (7-8)
+
+                      {/* Passives Group */}
+                      <div className="col-4">
+                        <div 
+                          className="p-2 rounded-3 transition-all d-flex flex-column align-items-center"
+                          style={{
+                            borderTop: '3px solid #6b7280',
+                            backgroundColor: formData.recommendScore !== null && (formData.recommendScore === 7 || formData.recommendScore === 8) ? 'rgba(107, 114, 128, 0.05)' : 'transparent',
+                            opacity: formData.recommendScore !== null && (formData.recommendScore === 7 || formData.recommendScore === 8) ? 1 : 0.4,
+                            transition: 'all 0.3s'
+                          }}
+                        >
+                          <span style={{ fontSize: '1.8rem', lineHeight: 1 }} className="mb-1">😐</span>
+                          <span className="fw-bold small text-secondary" style={{ fontSize: '0.8rem' }}>Passives</span>
+                          <span className="text-muted" style={{ fontSize: '0.7rem' }}>(7-8)</span>
+                        </div>
                       </div>
-                      <div className="text-end">
-                        <span style={{ fontSize: '1.2rem' }}>😊</span> Extremely Likely (9-10)
+
+                      {/* Promoters Group */}
+                      <div className="col-4">
+                        <div 
+                          className="p-2 rounded-3 transition-all d-flex flex-column align-items-center"
+                          style={{
+                            borderTop: '3px solid #eab308',
+                            backgroundColor: formData.recommendScore !== null && formData.recommendScore >= 9 ? 'rgba(234, 179, 8, 0.05)' : 'transparent',
+                            opacity: formData.recommendScore !== null && formData.recommendScore >= 9 ? 1 : 0.4,
+                            transition: 'all 0.3s'
+                          }}
+                        >
+                          <span style={{ fontSize: '1.8rem', lineHeight: 1 }} className="mb-1">😄</span>
+                          <span className="fw-bold small" style={{ fontSize: '0.8rem', color: '#b45309' }}>Promoters</span>
+                          <span className="text-muted" style={{ fontSize: '0.7rem' }}>(9-10)</span>
+                        </div>
                       </div>
                     </div>
                   </div>
