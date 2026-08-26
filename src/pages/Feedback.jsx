@@ -16,6 +16,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const [rating, setRating] = useState(5);
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [questionAnswers, setQuestionAnswers] = useState({});
+  const [customAnswers, setCustomAnswers] = useState({});
 
   const handleDeptSelect = (type) => {
     setCurrentType(type);
@@ -23,12 +24,23 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
     const initialAnswers = {};
     hospitalConfig[type]?.questions.forEach(q => initialAnswers[q] = '');
     setQuestionAnswers(initialAnswers);
+
+    // Initialize custom answers
+    const initialCustom = {};
+    if (hospitalConfig[type]?.customQuestions) {
+      hospitalConfig[type].customQuestions.forEach(q => {
+        initialCustom[q.id] = '';
+      });
+    }
+    setCustomAnswers(initialCustom);
+
     setStep('form');
   };
 
   const handleResetAndHome = () => {
     setFormData(INITIAL_FORM_DATA);
     setQuestionAnswers({});
+    setCustomAnswers({});
     setRating(5);
     setStep('select-dept');
     goHome();
@@ -37,6 +49,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const handleAnotherFeedback = () => {
     setFormData(INITIAL_FORM_DATA);
     setQuestionAnswers({});
+    setCustomAnswers({});
     setRating(5);
     setStep('select-dept');
   };
@@ -44,6 +57,16 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validate custom department questions if present
+    if (hospitalConfig[currentType]?.customQuestions) {
+      for (const q of hospitalConfig[currentType].customQuestions) {
+        if (!customAnswers[q.id]) {
+          alert(`Please answer the question: "${q.text}"`);
+          return;
+        }
+      }
+    }
+
     if (formData.recommendScore === null) {
       alert("Please select a recommendation score (Question 5).");
       return;
@@ -62,6 +85,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
       rating,
       category: computedCategory,
       questionAnswers,
+      customAnswers,
       feedbackText: formData.feedbackText.trim(),
       recommendScore: formData.recommendScore,
       createdAt: new Date().toISOString()
@@ -200,6 +224,69 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       </select>
                     </div>
                   </div>
+
+                  {/* Department Custom Questions (e.g. Optical Department purchase/collection questions) */}
+                  {hospitalConfig[currentType]?.customQuestions && hospitalConfig[currentType].customQuestions.length > 0 && (
+                    <div className="mb-4 bg-light p-3 p-md-4 rounded-3 border mt-4">
+                      <h6 className="mb-3 fw-bold text-main border-bottom pb-2">Department Specific Questions</h6>
+                      <div className="row g-3">
+                        {hospitalConfig[currentType].customQuestions.map((q) => (
+                          <div className="col-md-6" key={q.id}>
+                            <label className="form-label text-muted small fw-bold mb-2">{q.text} <span className="text-danger">*</span></label>
+                            {q.type === 'select' && (
+                              <div className="d-flex gap-2">
+                                {q.options.map(opt => {
+                                  const isSelected = customAnswers[q.id] === opt;
+                                  return (
+                                    <button
+                                      key={opt}
+                                      type="button"
+                                      className={`btn btn-sm flex-fill py-2 rounded-pill fw-medium ${
+                                        isSelected ? 'btn-primary' : 'btn-outline-primary bg-white'
+                                      }`}
+                                      onClick={() => setCustomAnswers({ ...customAnswers, [q.id]: opt })}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {q.type === 'emoji-3' && (
+                              <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded shadow-sm border" style={{ height: '42px' }}>
+                                {q.options.map(opt => {
+                                  const isSelected = customAnswers[q.id] === opt.text;
+                                  return (
+                                    <div
+                                      key={opt.text}
+                                      title={opt.text}
+                                      className="emoji-option flex-fill text-center d-flex align-items-center justify-content-center gap-1"
+                                      onClick={() => setCustomAnswers({ ...customAnswers, [q.id]: opt.text })}
+                                      style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                                    >
+                                      <span style={{
+                                        fontSize: '1.3rem',
+                                        opacity: isSelected ? 1 : 0.3,
+                                        transform: isSelected ? 'scale(1.2)' : 'scale(1)',
+                                        transition: 'all 0.2s'
+                                      }}>
+                                        {opt.emoji}
+                                      </span>
+                                      {isSelected && (
+                                        <span className="small fw-bold text-primary" style={{ fontSize: '0.75rem' }}>
+                                          {opt.text}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Overall Rating Emoji Scale */}
                   <h5 className="fw-bold mt-5 mb-3 text-primary border-bottom pb-2">2. Overall Experience</h5>

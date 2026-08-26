@@ -22,7 +22,25 @@ const DEFAULT_DEPARTMENTS = {
   "Optical Department": {
     icon: "bi-glasses",
     desc: "Optical Department (Spectacles, frames, lenses, and eye-wear fitting)",
-    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Premises Cleanliness"]
+    questions: ["Registration Experience", "Waiting Time", "Doctor's Behavior", "Support Staff Behavior", "Premises Cleanliness"],
+    customQuestions: [
+      {
+        id: "purchase_glasses",
+        text: "Did you purchase the glasses?",
+        type: "select",
+        options: ["Yes", "No", "May be"]
+      },
+      {
+        id: "frame_collection",
+        text: "How did you like the frame collection?",
+        type: "emoji-3",
+        options: [
+          { text: "Good", emoji: "😊" },
+          { text: "Neutral", emoji: "😐" },
+          { text: "Bad", emoji: "😞" }
+        ]
+      }
+    ]
   }
 };
 
@@ -127,7 +145,13 @@ export default function App() {
   const [hospitalConfig, setHospitalConfig] = useState(() => {
     try {
       const saved = localStorage.getItem('hospitalConfig');
-      return saved ? JSON.parse(saved) : DEFAULT_DEPARTMENTS;
+      let config = saved ? JSON.parse(saved) : DEFAULT_DEPARTMENTS;
+      // Migration: Ensure Optical Department has customQuestions if missing
+      if (config["Optical Department"] && !config["Optical Department"].customQuestions) {
+        config["Optical Department"].customQuestions = DEFAULT_DEPARTMENTS["Optical Department"].customQuestions;
+        localStorage.setItem('hospitalConfig', JSON.stringify(config));
+      }
+      return config;
     } catch {
       return DEFAULT_DEPARTMENTS;
     }

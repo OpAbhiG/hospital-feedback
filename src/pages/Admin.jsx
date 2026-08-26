@@ -164,14 +164,17 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
     }
     
     // Add UTF-8 BOM for Microsoft Excel compatibility
-    let csv = "\uFEFFFeedback ID,Date,Department,Patient Name,Mobile,Age,Gender,Rating,Category,Comments,Recommend Score\n";
+    let csv = "\uFEFFFeedback ID,Date,Department,Patient Name,Mobile,Age,Gender,Rating,Category,Comments,Recommend Score,Additional Questions\n";
     csv += dataToExport.map(f => {
       const dateStr = f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '';
       const name = (f.patientName || '').replace(/"/g, '""');
       const mobile = (f.mobile || '');
       const comments = (f.feedbackText || '').replace(/"/g, '""').replace(/\n/g, ' ');
       const nps = f.recommendScore !== undefined && f.recommendScore !== null ? f.recommendScore : '';
-      return `"${f.id}","${dateStr}","${f.feedbackType}","${name}","${mobile}","${f.age || ''}","${f.gender || ''}","${f.rating || ''}","${f.category || ''}","${comments}","${nps}"`;
+      const customAns = f.customAnswers 
+        ? Object.entries(f.customAnswers).map(([k, v]) => `${k}: ${v}`).join(' | ').replace(/"/g, '""')
+        : '';
+      return `"${f.id}","${dateStr}","${f.feedbackType}","${name}","${mobile}","${f.age || ''}","${f.gender || ''}","${f.rating || ''}","${f.category || ''}","${comments}","${nps}","${customAns}"`;
     }).join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -622,6 +625,27 @@ export default function Admin({ feedbacks = [], hospitalConfig = {}, updateConfi
                 <div className="bg-light p-3 rounded border text-main mb-4">
                   {selectedSubmission.feedbackText ? selectedSubmission.feedbackText : <em className="text-muted">No additional comments provided.</em>}
                 </div>
+
+                {selectedSubmission.customAnswers && Object.keys(selectedSubmission.customAnswers).length > 0 && (
+                  <div className="mb-4 bg-light p-3 rounded border">
+                    <h6 className="fw-bold text-main mb-2 small text-uppercase opacity-75">Additional Department Answers</h6>
+                    <div className="row g-2">
+                      {Object.entries(selectedSubmission.customAnswers).map(([key, val], idx) => {
+                        const deptConfig = hospitalConfig[selectedSubmission.feedbackType];
+                        const qObj = deptConfig?.customQuestions?.find(q => q.id === key);
+                        const questionText = qObj ? qObj.text : key;
+                        return (
+                          <div className="col-12" key={idx}>
+                            <div className="d-flex justify-content-between align-items-center bg-white p-2 rounded small border">
+                              <span className="text-muted fw-semibold">{questionText}</span>
+                              <span className="fw-bold text-primary">{val || 'Not answered'}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {selectedSubmission.recommendScore !== undefined && selectedSubmission.recommendScore !== null && (
                   <div className="p-3 bg-light rounded-3 border">
