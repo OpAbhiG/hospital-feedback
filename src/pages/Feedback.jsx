@@ -408,7 +408,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                     <div className="d-flex justify-content-between gap-3 mb-4 w-100 align-items-end flex-wrap flex-md-nowrap" style={{ paddingBottom: '8px' }}>
                       {/* Detractors Group (0-6) */}
                       <div className="d-flex flex-column flex-fill" style={{ minWidth: '220px' }}>
-                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                        <span className="text-muted small fw-bold text-start mb-2 text-uppercase px-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
                           Not at all likely
                         </span>
                         <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-danger">
@@ -476,7 +476,7 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
 
                       {/* Promoters Group (9-10) */}
                       <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '80px' }}>
-                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase" style={{ fontSize: '0.75rem', color: '#b45309', letterSpacing: '0.5px' }}>
+                        <span className="text-muted small fw-bold text-end mb-2 text-uppercase px-1" style={{ fontSize: '0.75rem', color: '#b45309', letterSpacing: '0.5px' }}>
                           Extremely likely
                         </span>
                         <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-warning">
