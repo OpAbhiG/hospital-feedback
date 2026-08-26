@@ -407,8 +407,8 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                     {/* Numbers 0 to 10 Container grouped dynamically */}
                     <div className="d-flex justify-content-between gap-3 mb-4 w-100 align-items-end flex-wrap flex-md-nowrap" style={{ paddingBottom: '8px' }}>
                       {/* Detractors Group (0-6) */}
-                      <div className="d-flex flex-column flex-fill" style={{ minWidth: '220px' }}>
-                        <span className="text-muted small fw-bold text-start mb-2 text-uppercase px-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                      <div className="d-flex flex-column flex-fill" style={{ minWidth: '270px' }}>
+                        <span className="text-muted small fw-bold text-start mb-2 text-uppercase px-1" style={{ fontSize: '0.75rem', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                           Not at all likely
                         </span>
                         <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-danger">
@@ -420,11 +420,11 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                                 type="button"
                                 className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
                                 style={{ 
-                                  width: '32px', 
-                                  height: '32px',
-                                  minWidth: '28px',
-                                  minHeight: '28px',
-                                  fontSize: '0.9rem',
+                                  width: '38px', 
+                                  height: '38px',
+                                  minWidth: '32px',
+                                  minHeight: '32px',
+                                  fontSize: '1rem',
                                   fontWeight: 'bold',
                                   backgroundColor: isSelected ? '#dc2626' : '#ffffff',
                                   color: isSelected ? '#ffffff' : '#4b5563',
@@ -441,8 +441,8 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       </div>
 
                       {/* Passives Group (7-8) */}
-                      <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '80px' }}>
-                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase invisible" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
+                      <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '90px' }}>
+                        <span className="text-muted small fw-bold text-center mb-2 text-uppercase invisible" style={{ fontSize: '0.75rem', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                           Neutral
                         </span>
                         <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-secondary">
@@ -454,11 +454,11 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                                 type="button"
                                 className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
                                 style={{ 
-                                  width: '32px', 
-                                  height: '32px',
-                                  minWidth: '28px',
-                                  minHeight: '28px',
-                                  fontSize: '0.9rem',
+                                  width: '38px', 
+                                  height: '38px',
+                                  minWidth: '32px',
+                                  minHeight: '32px',
+                                  fontSize: '1rem',
                                   fontWeight: 'bold',
                                   backgroundColor: isSelected ? '#6b7280' : '#ffffff',
                                   color: isSelected ? '#ffffff' : '#4b5563',
@@ -475,8 +475,8 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                       </div>
 
                       {/* Promoters Group (9-10) */}
-                      <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '80px' }}>
-                        <span className="text-muted small fw-bold text-end mb-2 text-uppercase px-1" style={{ fontSize: '0.75rem', color: '#b45309', letterSpacing: '0.5px' }}>
+                      <div className="d-flex flex-column flex-fill" style={{ maxWidth: '120px', minWidth: '90px' }}>
+                        <span className="text-muted small fw-bold text-end mb-2 text-uppercase px-1" style={{ fontSize: '0.75rem', color: '#b45309', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                           Extremely likely
                         </span>
                         <div className="d-flex justify-content-between gap-1 p-1.5 rounded bg-light border-bottom border-3 border-warning">
@@ -488,11 +488,11 @@ export default function Feedback({ hospitalConfig, submitFeedback, goHome }) {
                                 type="button"
                                 className="btn p-0 d-flex align-items-center justify-content-center flex-fill rounded-circle shadow-sm"
                                 style={{ 
-                                  width: '32px', 
-                                  height: '32px',
-                                  minWidth: '28px',
-                                  minHeight: '28px',
-                                  fontSize: '0.9rem',
+                                  width: '38px', 
+                                  height: '38px',
+                                  minWidth: '32px',
+                                  minHeight: '32px',
+                                  fontSize: '1rem',
                                   fontWeight: 'bold',
                                   backgroundColor: isSelected ? '#eab308' : '#ffffff',
                                   color: isSelected ? '#ffffff' : '#4b5563',
